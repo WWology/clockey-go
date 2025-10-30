@@ -33,7 +33,6 @@ go.work.sum
 # .vscode/
 
 .vscode/
-.devcontainer/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
