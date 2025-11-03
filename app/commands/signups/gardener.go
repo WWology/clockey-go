@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"clockey/app"
+	"clockey/database"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
@@ -27,6 +28,7 @@ var Gardener = discord.MessageCommandCreate{
 
 func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 	return func(data discord.MessageCommandInteractionData, e *handler.CommandEvent) error {
+		// Check if message has already been processed
 		if processed(data.TargetMessage()) {
 			e.CreateMessage(discord.MessageCreate{
 				Content: "This message has been processed for signups",
@@ -35,6 +37,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 			return nil
 		}
 
+		// Show gardener selection menu
 		gardenerSelectMenu, err := gardenerSelectMenuBuilder(e, data.TargetMessage())
 		e.CreateMessage(discord.MessageCreate{
 			Components: []discord.LayoutComponent{
@@ -52,32 +55,44 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
-			bot.WaitForEvent(e.Client(), ctx, func(s *events.ComponentInteractionCreate) bool {
-				return s.Data.CustomID() == "gardener_select_menu"
-			}, func(s *events.ComponentInteractionCreate) {
-				selectedGardenerID := s.Data.(discord.StringSelectMenuInteractionData).Values[0]
+			bot.WaitForEvent(e.Client(), ctx,
+				func(s *events.ComponentInteractionCreate) bool {
+					return s.Data.CustomID() == "gardener_select_menu"
+				},
+				func(s *events.ComponentInteractionCreate) {
+					selectedGardenerID := s.Data.(discord.StringSelectMenuInteractionData).Values[0]
+					gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
 
-				name, eventTime, eventType, hours, err := parseMessage(data.TargetMessage().Content)
+					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
+					b.DB.Queries.CreateEvent(ctx, database.CreateEventParams{
+						Name:     name,
+						Time:     eventTime,
+						Type:     eventType,
+						Hours:    hours,
+						Gardener: gardenerID,
+					})
 
-				s.Client().Rest.AddReaction(s.Message.ChannelID, s.Message.ID, "OGwecoo")
-				s.UpdateMessage(discord.MessageUpdate{
-					Content:    omit.Ptr("Hours added to the database"),
-					Components: &[]discord.LayoutComponent{},
-				})
+					s.Client().Rest.AddReaction(s.Message.ChannelID, s.Message.ID, "OGwecoo")
+					s.UpdateMessage(discord.MessageUpdate{
+						Content:    omit.Ptr("Hours added to the database"),
+						Components: &[]discord.LayoutComponent{},
+					})
 
-				if err != nil {
-					e.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
-					return
-				}
+					if err != nil {
+						e.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
+						return
+					}
 
-			}, func() {
-				if err := e.CreateMessage(discord.MessageCreate{
-					Content: "Gardener selection timed out.",
-					Flags:   discord.MessageFlagEphemeral,
-				}); err != nil {
-					e.Client().Logger.Error("Failed to send timeout message", slog.Any("err", err))
-				}
-			})
+				},
+				func() {
+					if err := e.CreateMessage(discord.MessageCreate{
+						Content: "Gardener selection timed out.",
+						Flags:   discord.MessageFlagEphemeral,
+					}); err != nil {
+						e.Client().Logger.Error("Failed to send timeout message", slog.Any("err", err))
+					}
+				},
+			)
 		}()
 
 		return nil
@@ -145,7 +160,7 @@ func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (di
 	}, nil
 }
 
-func parseMessage(msg string) (string, string, int64, int, error) {
+func parseMessage(msg string) (string, string, int64, int64, error) {
 	var eventType string
 	if strings.Contains(msg, "Dota") {
 		eventType = "Dota"

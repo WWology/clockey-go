@@ -14,6 +14,7 @@ import (
 	"clockey/app/commands"
 	"clockey/app/commands/signups"
 	"clockey/app/handlers"
+	"clockey/database"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
@@ -46,7 +47,10 @@ func main() {
 	slog.Info("Starting Clockey...", slog.String("version", Version), slog.String("commit", Commit))
 	slog.Info("Syncing commands", slog.Bool("sync", *shouldSyncCommands))
 
-	b := app.New(*cfg, Version, Commit, db)
+	b := app.New(*cfg, Version, Commit, app.Database{
+		Queries: database.New(db),
+		Conn:    db,
+	})
 
 	h := handler.New()
 	h.SlashCommand("/event", signups.EventCommandHandler(b))

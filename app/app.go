@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"time"
 
+	"clockey/database"
+
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/cache"
@@ -14,7 +16,7 @@ import (
 	"github.com/disgoorg/disgo/gateway"
 )
 
-func New(cfg Config, version string, commit string, db *sql.DB) *Bot {
+func New(cfg Config, version string, commit string, db Database) *Bot {
 	return &Bot{
 		Cfg:     cfg,
 		Version: version,
@@ -23,12 +25,17 @@ func New(cfg Config, version string, commit string, db *sql.DB) *Bot {
 	}
 }
 
+type Database struct {
+	Queries *database.Queries
+	Conn    *sql.DB
+}
+
 type Bot struct {
 	Cfg     Config
 	Client  *bot.Client
 	Version string
 	Commit  string
-	DB      *sql.DB
+	DB      Database
 }
 
 func (b *Bot) SetupBot(listeners ...bot.EventListener) error {
