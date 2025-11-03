@@ -1,19 +1,18 @@
 package signups
 
 import (
-	"clockey/app"
-	"clockey/app/constants"
 	"context"
 	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
+	"clockey/app"
+
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/handler"
-	"github.com/disgoorg/snowflake/v2"
 )
 
 var Event = discord.SlashCommandCreate{
@@ -23,6 +22,7 @@ var Event = discord.SlashCommandCreate{
 
 func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
+		// Show modal to collect event details
 		if err := e.Modal(discord.ModalCreate{
 			CustomID: "event_modal",
 			Title:    "Event Modal",
@@ -32,7 +32,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					Description: "Select the type of event",
 					Component: discord.StringSelectMenuComponent{
 						CustomID: "event_type",
-						Options:  constants.OGGames,
+						Options:  OGGames,
 						Required: true,
 					},
 				},
@@ -77,6 +77,8 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		}); err != nil {
 			return err
 		}
+
+		// Handle modal submission
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
@@ -88,32 +90,23 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
 					if err != nil {
 						m.Client().Logger.Error("Failed to parse event_time", slog.Any("err", err))
+						m.CreateMessage(discord.MessageCreate{
+							Content: m.Data.Text("event_time") + " is not a valid unix time. Please try again.",
+						})
+						return
 					}
 
-					replyText := "Hey <@&720253636797530203>\n\n" +
+					replyText := "Hey <@&" + GardenerRoleID.String() + ">\n\n" +
 						"Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
-						"Please react with <:OGpeepoYes:730890894814740541> to sign up!."
+						"Please react with " + SignupEmojiString + " to sign up!."
 
 					var banner *discord.Icon
 					attachments, provided := m.Data.OptAttachments("event_banner")
 					if provided && len(attachments) > 0 {
 						m.Client().Logger.Info("Banner Image provided")
-						resp, err := http.Get(attachments[0].URL)
-						if err != nil {
-							m.Client().Logger.Error("Failed to fetch banner image", slog.Any("err", err))
-							m.CreateMessage(discord.MessageCreate{
-								Content: "Failed to fetch banner image, please try again",
-							})
-						}
-						banner, err = discord.NewIcon(discord.IconTypeJPEG, resp.Body)
-						if err != nil {
-							m.Client().Logger.Error("Failed to create icon from banner image", slog.Any("err", err))
-							m.CreateMessage(discord.MessageCreate{
-								Content: "Failed to process banner image, please try again",
-							})
-						}
+						banner = getBanner(attachments[0], m.Client().Logger)
 					} else {
 						banner = nil
 					}
@@ -124,7 +117,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          constants.Channels["Dota"].(snowflake.ID),
+							ChannelID:          Channels.VoiceChannels["Dota"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -135,7 +128,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          constants.Channels["CS"].(snowflake.ID),
+							ChannelID:          Channels.VoiceChannels["CS"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -147,7 +140,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: constants.Channels["MLBB"].(string),
+								Location: Channels.ExternalChannels["MLBB"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -160,7 +153,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: constants.Channels["HoK"].(string),
+								Location: Channels.ExternalChannels["HoK"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -172,7 +165,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeStageInstance,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          constants.Channels["OGStage"].(snowflake.ID),
+							ChannelID:          Channels.StageChannel,
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -180,21 +173,28 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						}
 					}
 
-					m.CreateMessage(discord.MessageCreate{
+					if err := m.CreateMessage(discord.MessageCreate{
 						Content: replyText,
 						AllowedMentions: &discord.AllowedMentions{
 							Roles: discord.DefaultAllowedMentions.Roles,
 							Users: discord.DefaultAllowedMentions.Users,
 						},
-					})
+					}); err != nil {
+						m.Client().Logger.Error("Failed to send event message", slog.Any("err", err))
+						return
+					}
 
 					msg, err := m.Client().Rest.GetInteractionResponse(m.ApplicationID(), m.Token())
 					if err != nil {
 						m.Client().Logger.Error("Failed to get interaction response", slog.Any("err", err))
+						return
 					}
 
 					// Add reaction to the message
-					m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, "OGPeepoYes")
+					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, "OGPeepoYes"); err != nil {
+						m.Client().Logger.Error("Failed to add reaction to event message", slog.Any("err", err))
+						return
+					}
 				},
 				func() {
 					if err := e.CreateMessage(discord.MessageCreate{
@@ -207,4 +207,18 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		}()
 		return nil
 	}
+}
+
+func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon {
+	resp, err := http.Get(attachment.URL)
+	if err != nil {
+		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		return nil
+	}
+	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
+	if err != nil {
+		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		return nil
+	}
+	return banner
 }
