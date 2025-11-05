@@ -64,24 +64,27 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
 
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
+					if err != nil {
+						s.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
+						return
+					}
+
 					b.DB.Queries.CreateEvent(ctx, database.CreateEventParams{
+						Type:     eventType,
 						Name:     name,
 						Time:     eventTime,
-						Type:     eventType,
 						Hours:    hours,
 						Gardener: gardenerID,
 					})
 
-					s.Client().Rest.AddReaction(s.Message.ChannelID, s.Message.ID, "OGwecoo")
+					if err := s.Client().Rest.AddReaction(s.Message.ChannelID, s.Message.ID, "OGwecoo"); err != nil {
+						s.Client().Logger.Error("Failed to add reaction", slog.Any("err", err))
+					}
+
 					s.UpdateMessage(discord.MessageUpdate{
 						Content:    omit.Ptr("Hours added to the database"),
 						Components: &[]discord.LayoutComponent{},
 					})
-
-					if err != nil {
-						e.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
-						return
-					}
 
 				},
 				func() {
@@ -198,11 +201,11 @@ func parseMessage(msg string) (string, string, int64, int64, error) {
 		return "", "", 0, 0, fmt.Errorf("failed to parse event time")
 	}
 
-	var hours int
+	var hours int64
 	hoursRegex := regexp.MustCompile(`Hours: (\d+) hours`)
 	hoursMatch := hoursRegex.FindStringSubmatch(msg)
 	if len(hoursMatch) > 1 {
-		parsedHours, err := strconv.Atoi(hoursMatch[1])
+		parsedHours, err := strconv.ParseInt(hoursMatch[1], 10, 64)
 		if err != nil {
 			return "", "", 0, 0, fmt.Errorf("failed to parse event hours")
 		}
