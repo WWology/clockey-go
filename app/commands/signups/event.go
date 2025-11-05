@@ -100,15 +100,35 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						"Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
-						"Please react with " + SignupEmojiString + " to sign up!."
+						"Please react with <:" + SignupEmoji + "> to sign up!."
 
 					var banner *discord.Icon
 					attachments, provided := m.Data.OptAttachments("event_banner")
 					if provided && len(attachments) > 0 {
-						m.Client().Logger.Info("Banner Image provided")
 						banner = getBanner(attachments[0], m.Client().Logger)
 					} else {
 						banner = nil
+					}
+
+					if err := m.CreateMessage(discord.MessageCreate{
+						Content: replyText,
+						AllowedMentions: &discord.AllowedMentions{
+							Roles: discord.DefaultAllowedMentions.Roles,
+							Users: discord.DefaultAllowedMentions.Users,
+						},
+					}); err != nil {
+						m.Client().Logger.Error("Failed to send event message", slog.Any("err", err))
+						return
+					}
+
+					msg, err := m.Client().Rest.GetInteractionResponse(m.ApplicationID(), m.Token())
+					if err != nil {
+						m.Client().Logger.Error("Failed to get interaction response", slog.Any("err", err))
+					}
+
+					// Add reaction to the message
+					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, SignupEmoji); err != nil {
+						m.Client().Logger.Error("Failed to add reaction to event message", slog.Any("err", err))
 					}
 
 					switch m.Data.StringValues("event_type")[0] {
@@ -171,29 +191,6 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						}); err != nil {
 							m.Client().Logger.Error("Failed to create scheduled event", slog.Any("err", err))
 						}
-					}
-
-					if err := m.CreateMessage(discord.MessageCreate{
-						Content: replyText,
-						AllowedMentions: &discord.AllowedMentions{
-							Roles: discord.DefaultAllowedMentions.Roles,
-							Users: discord.DefaultAllowedMentions.Users,
-						},
-					}); err != nil {
-						m.Client().Logger.Error("Failed to send event message", slog.Any("err", err))
-						return
-					}
-
-					msg, err := m.Client().Rest.GetInteractionResponse(m.ApplicationID(), m.Token())
-					if err != nil {
-						m.Client().Logger.Error("Failed to get interaction response", slog.Any("err", err))
-						return
-					}
-
-					// Add reaction to the message
-					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, "OGPeepoYes"); err != nil {
-						m.Client().Logger.Error("Failed to add reaction to event message", slog.Any("err", err))
-						return
 					}
 				},
 				func() {

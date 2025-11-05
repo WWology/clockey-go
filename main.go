@@ -16,6 +16,8 @@ import (
 	"clockey/app/handlers"
 	"clockey/database"
 
+	_ "modernc.org/sqlite"
+
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
 )
@@ -36,7 +38,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	db, err := sql.Open("sqlite", "sqlite://db/clockey.db")
+	db, err := sql.Open("sqlite", "sqlite://database/clockey.db")
 	if err != nil {
 		slog.Error("Failed to open database", slog.Any("err", err))
 		os.Exit(-1)
@@ -54,6 +56,7 @@ func main() {
 
 	h := handler.New()
 	h.SlashCommand("/event", signups.EventCommandHandler(b))
+	h.MessageCommand("/Roll Gardener", signups.GardenerCommandHandler(b))
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), handlers.MessageHandler(b)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))

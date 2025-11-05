@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"clockey/app"
-	"clockey/database"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
@@ -39,7 +38,11 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 
 		// Show gardener selection menu
 		gardenerSelectMenu, err := gardenerSelectMenuBuilder(e, data.TargetMessage())
-		e.CreateMessage(discord.MessageCreate{
+		if err != nil {
+			return err
+		}
+
+		if err := e.CreateMessage(discord.MessageCreate{
 			Components: []discord.LayoutComponent{
 				discord.ActionRowComponent{
 					Components: []discord.InteractiveComponent{
@@ -47,8 +50,8 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					},
 				},
 			},
-		})
-		if err != nil {
+			Flags: discord.MessageFlagEphemeral,
+		}); err != nil {
 			return err
 		}
 
@@ -61,23 +64,24 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 				},
 				func(s *events.ComponentInteractionCreate) {
 					selectedGardenerID := s.Data.(discord.StringSelectMenuInteractionData).Values[0]
-					gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
+					// gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
 
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
+					print(eventType, name, eventTime, hours)
 					if err != nil {
 						s.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
 						return
 					}
 
-					b.DB.Queries.CreateEvent(ctx, database.CreateEventParams{
-						Type:     eventType,
-						Name:     name,
-						Time:     eventTime,
-						Hours:    hours,
-						Gardener: gardenerID,
-					})
+					// b.DB.Queries.CreateEvent(ctx, database.CreateEventParams{
+					// 	Type:     eventType,
+					// 	Name:     name,
+					// 	Time:     eventTime,
+					// 	Hours:    hours,
+					// 	Gardener: gardenerID,
+					// })
 
-					if err := s.Client().Rest.AddReaction(s.Message.ChannelID, s.Message.ID, "OGwecoo"); err != nil {
+					if err := s.Client().Rest.AddReaction(data.TargetMessage().ChannelID, data.TargetMessage().ID, ProcessedEmoji); err != nil {
 						s.Client().Logger.Error("Failed to add reaction", slog.Any("err", err))
 					}
 
@@ -85,6 +89,22 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						Content:    omit.Ptr("Hours added to the database"),
 						Components: &[]discord.LayoutComponent{},
 					})
+
+					if _, err := s.Client().Rest.CreateMessage(s.Message.ChannelID, discord.MessageCreate{
+						MessageReference: &discord.MessageReference{
+							Type:      discord.MessageReferenceTypeForward,
+							MessageID: omit.Ptr(data.TargetMessage().ID),
+							ChannelID: omit.Ptr(data.TargetMessage().ChannelID),
+						},
+					}); err != nil {
+						s.Client().Logger.Error("Failed to send message reference", slog.Any("err", err))
+					}
+
+					if _, err := s.Client().Rest.CreateMessage(s.Message.ChannelID, discord.MessageCreate{
+						Content: "<@" + selectedGardenerID + "> will be working " + name,
+					}); err != nil {
+						s.Client().Logger.Error("Failed to send message", slog.Any("err", err))
+					}
 
 				},
 				func() {
@@ -104,7 +124,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 
 func processed(msg discord.Message) bool {
 	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == "OGPeepoYes" {
+		if reaction.Emoji.Name == ProcessedEmoji {
 			return true
 		}
 	}
@@ -112,7 +132,7 @@ func processed(msg discord.Message) bool {
 }
 
 func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (discord.StringSelectMenuComponent, error) {
-	gardenersReacted, err := e.Client().Rest.GetReactions(msg.ChannelID, msg.ID, "OGPeepoYes", discord.MessageReactionTypeNormal, 0, 6)
+	gardenersReacted, err := e.Client().Rest.GetReactions(msg.ChannelID, msg.ID, SignupEmoji, discord.MessageReactionTypeNormal, 0, 6)
 	if err != nil {
 		return discord.StringSelectMenuComponent{}, err
 	}
@@ -125,34 +145,13 @@ func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (di
 	gardenerSelectMenuOptions := []discord.StringSelectMenuOption{}
 
 	for _, gardener := range gardenersReacted {
-		switch gardener.ID {
-		case 293_360_731_867_316_225:
+		if name, exists := GardenerIDsMap[gardener.ID]; exists {
 			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
-				Label: "N1k",
-				Value: "293_360_731_867_316_225",
+				Label: name,
+				Value: gardener.ID.String(),
 			})
-		case 204_923_365_205_475_329:
-			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
-				Label: "Kit",
-				Value: "204_923_365_205_475_329",
-			})
-		case 754_724_309_276_164_159:
-			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
-				Label: "WW",
-				Value: "754_724_309_276_164_159",
-			})
-		case 172_360_818_715_918_337:
-			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
-				Label: "Bonteng",
-				Value: "172_360_818_715_918_337",
-			})
-		case 332_438_787_588_227_072:
-			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
-				Label: "Sam",
-				Value: "332_438_787_588_227_072",
-			})
-		default:
-			return discord.StringSelectMenuComponent{}, fmt.Errorf("invalid id gardener select menu")
+		} else {
+			return discord.StringSelectMenuComponent{}, fmt.Errorf("unknown gardener ID: %d", gardener.ID)
 		}
 	}
 
@@ -176,7 +175,7 @@ func parseMessage(msg string) (string, string, int64, int64, error) {
 	} else if strings.Contains(msg, "Other") {
 		eventType = "Other"
 	} else {
-		return "", "", 0, 0, fmt.Errorf("failed to parse event name")
+		return "", "", 0, 0, fmt.Errorf("failed to parse event type")
 	}
 
 	var name string

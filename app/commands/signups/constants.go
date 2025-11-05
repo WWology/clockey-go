@@ -26,9 +26,8 @@ type ChannelConfig struct {
 // }
 
 // var GardenerRoleID = snowflake.ID(720253636797530203)
-// var SignupEmoji = "OGpeepoYes"
-// var SignupEmojiString = "<:OGpeepoYes:730890894814740541>"
-// var ProcessedEmoji = "OGwecoo"
+// var SignupEmoji = "OGpeepoYes:730890894814740541"
+// var ProcessedEmoji = "OGwecoo:787697278190223370"
 
 // Dev channel and role IDs
 var Channels = ChannelConfig{
@@ -44,9 +43,8 @@ var Channels = ChannelConfig{
 }
 
 var GardenerRoleID = snowflake.ID(1435510452795871232)
-var SignupEmoji = "khezuBrain"
-var SignupEmojiString = "<:khezuBrain:1329032244580323349>"
-var ProcessedEmoji = "ruggahPain"
+var SignupEmoji = "khezuBrain:1329032244580323349"
+var ProcessedEmoji = "ruggahPain:951843834554376262"
 
 var OGGames = []discord.StringSelectMenuOption{
 	{
@@ -92,4 +90,12 @@ var Gardeners = []discord.ApplicationCommandOptionChoiceString{
 		Name:  "Sam",
 		Value: "Sam",
 	},
+}
+
+var GardenerIDsMap = map[snowflake.ID]string{
+	293360731867316225: "N1k",
+	204923365205475329: "Kit",
+	754724309276164159: "WW",
+	172360818715918337: "Bonteng",
+	332438787588227072: "Sam",
 }
