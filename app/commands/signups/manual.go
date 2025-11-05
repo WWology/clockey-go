@@ -1,13 +1,11 @@
 package signups
 
 import (
+	"clockey/app"
 	"context"
 	"log/slog"
-	"net/http"
 	"strconv"
 	"time"
-
-	"clockey/app"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
@@ -15,12 +13,20 @@ import (
 	"github.com/disgoorg/disgo/handler"
 )
 
-var Event = discord.SlashCommandCreate{
-	Name:        "event",
-	Description: "Create a new event for Gardeners to sign up for",
+var Manual = discord.SlashCommandCreate{
+	Name:        "manual",
+	Description: "Manually assign gardeners to an event",
+	Options: []discord.ApplicationCommandOption{
+		discord.ApplicationCommandOptionString{
+			Name:        "gardener",
+			Description: "Gardener to work on the event",
+			Required:    true,
+			Choices:     Gardeners,
+		},
+	},
 }
 
-func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
+func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		// Show modal to collect event details
 		if err := e.Modal(EventModal); err != nil {
@@ -36,6 +42,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					return m.Data.CustomID == "event_modal"
 				},
 				func(m *events.ModalSubmitInteractionCreate) {
+					// Handle the event details submission
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
 					if err != nil {
 						m.Client().Logger.Error("Failed to parse event_time", slog.Any("err", err))
@@ -45,11 +52,10 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						return
 					}
 
-					replyText := "Hey <@&" + GardenerRoleID.String() + ">\n\n" +
-						"Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
+					replyText := "Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
-						"Please react with <:" + SignupEmoji + "> to sign up!."
+						"Gardener: <@" + data.String("gardener") + ">"
 
 					var banner *discord.Icon
 					attachments, provided := m.Data.OptAttachments("event_banner")
@@ -61,23 +67,9 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 
 					if err := m.CreateMessage(discord.MessageCreate{
 						Content: replyText,
-						AllowedMentions: &discord.AllowedMentions{
-							Roles: discord.DefaultAllowedMentions.Roles,
-							Users: discord.DefaultAllowedMentions.Users,
-						},
 					}); err != nil {
 						m.Client().Logger.Error("Failed to send event message", slog.Any("err", err))
 						return
-					}
-
-					msg, err := m.Client().Rest.GetInteractionResponse(m.ApplicationID(), m.Token())
-					if err != nil {
-						m.Client().Logger.Error("Failed to get interaction response", slog.Any("err", err))
-					}
-
-					// Add reaction to the message
-					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, SignupEmoji); err != nil {
-						m.Client().Logger.Error("Failed to add reaction to event message", slog.Any("err", err))
 					}
 
 					switch m.Data.StringValues("event_type")[0] {
@@ -141,6 +133,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							m.Client().Logger.Error("Failed to create scheduled event", slog.Any("err", err))
 						}
 					}
+
 				},
 				func() {
 					if err := e.CreateMessage(discord.MessageCreate{
@@ -153,18 +146,4 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		}()
 		return nil
 	}
-}
-
-func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon {
-	resp, err := http.Get(attachment.URL)
-	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
-		return nil
-	}
-	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
-	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
-		return nil
-	}
-	return banner
 }

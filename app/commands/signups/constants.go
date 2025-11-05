@@ -99,3 +99,56 @@ var GardenerIDsMap = map[snowflake.ID]string{
 	172360818715918337: "Bonteng",
 	332438787588227072: "Sam",
 }
+
+var EventModal = discord.ModalCreate{
+	CustomID: "event_modal",
+	Title:    "Event Modal",
+	Components: []discord.LayoutComponent{
+		discord.LabelComponent{
+			Label:       "Event Type",
+			Description: "Select the type of event",
+			Component: discord.StringSelectMenuComponent{
+				CustomID: "event_type",
+				Options:  OGGames,
+				Required: true,
+			},
+		},
+		discord.LabelComponent{
+			Label:       "Event Name",
+			Description: "Enter the name of the event",
+			Component: discord.TextInputComponent{
+				CustomID:    "event_name",
+				Style:       discord.TextInputStyleShort,
+				Placeholder: "OG vs <opp team name>",
+				Required:    true,
+			},
+		},
+		discord.LabelComponent{
+			Label:       "Event Schedule",
+			Description: "Enter the unix time for the start of this event",
+			Component: discord.TextInputComponent{
+				CustomID:    "event_time",
+				Style:       discord.TextInputStyleShort,
+				Required:    true,
+				Placeholder: "Insert unix time from hammertime here",
+			},
+		},
+		discord.LabelComponent{
+			Label:       "Event duration",
+			Description: "How many hours is this event",
+			Component: discord.TextInputComponent{
+				CustomID: "event_duration",
+				Style:    discord.TextInputStyleShort,
+				Required: true,
+			},
+		},
+		discord.LabelComponent{
+			Label:       "Event Banner",
+			Description: "The banner for this event (if any, 800x320 px in size). ",
+			Component: discord.FileUploadComponent{
+				CustomID: "event_banner",
+				Required: false,
+			},
+		},
+	},
+}
