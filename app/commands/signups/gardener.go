@@ -81,7 +81,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					// 	Gardener: gardenerID,
 					// })
 
-					if err := s.Client().Rest.AddReaction(data.TargetMessage().ChannelID, data.TargetMessage().ID, ProcessedEmoji); err != nil {
+					if err := s.Client().Rest.AddReaction(data.TargetMessage().ChannelID, data.TargetMessage().ID, processedEmoji); err != nil {
 						s.Client().Logger.Error("Failed to add reaction", slog.Any("err", err))
 					}
 
@@ -124,7 +124,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 
 func processed(msg discord.Message) bool {
 	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == ProcessedEmoji {
+		if reaction.Emoji.Name == processedEmoji {
 			return true
 		}
 	}
@@ -132,7 +132,7 @@ func processed(msg discord.Message) bool {
 }
 
 func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (discord.StringSelectMenuComponent, error) {
-	gardenersReacted, err := e.Client().Rest.GetReactions(msg.ChannelID, msg.ID, SignupEmoji, discord.MessageReactionTypeNormal, 0, 6)
+	gardenersReacted, err := e.Client().Rest.GetReactions(msg.ChannelID, msg.ID, signupEmoji, discord.MessageReactionTypeNormal, 0, 6)
 	if err != nil {
 		return discord.StringSelectMenuComponent{}, err
 	}
@@ -145,7 +145,7 @@ func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (di
 	gardenerSelectMenuOptions := []discord.StringSelectMenuOption{}
 
 	for _, gardener := range gardenersReacted {
-		if name, exists := GardenerIDsMap[gardener.ID]; exists {
+		if name, exists := gardenerIDsMap[gardener.ID]; exists {
 			gardenerSelectMenuOptions = append(gardenerSelectMenuOptions, discord.StringSelectMenuOption{
 				Label: name,
 				Value: gardener.ID.String(),

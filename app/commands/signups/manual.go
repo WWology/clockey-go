@@ -21,7 +21,7 @@ var Manual = discord.SlashCommandCreate{
 			Name:        "gardener",
 			Description: "Gardener to work on the event",
 			Required:    true,
-			Choices:     Gardeners,
+			Choices:     gardeners,
 		},
 	},
 }
@@ -29,7 +29,7 @@ var Manual = discord.SlashCommandCreate{
 func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		// Show modal to collect event details
-		if err := e.Modal(EventModal); err != nil {
+		if err := e.Modal(eventModal); err != nil {
 			return err
 		}
 
@@ -78,7 +78,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.VoiceChannels["Dota"],
+							ChannelID:          channels.VoiceChannels["Dota"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -89,7 +89,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.VoiceChannels["CS"],
+							ChannelID:          channels.VoiceChannels["CS"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -101,7 +101,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: Channels.ExternalChannels["MLBB"],
+								Location: channels.ExternalChannels["MLBB"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -114,7 +114,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: Channels.ExternalChannels["HoK"],
+								Location: channels.ExternalChannels["HoK"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -126,7 +126,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeStageInstance,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.StageChannel,
+							ChannelID:          channels.StageChannel,
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {

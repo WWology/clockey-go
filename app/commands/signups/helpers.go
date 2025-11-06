@@ -1,6 +1,9 @@
 package signups
 
 import (
+	"log/slog"
+	"net/http"
+
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/snowflake/v2"
 )
@@ -30,7 +33,7 @@ type ChannelConfig struct {
 // var ProcessedEmoji = "OGwecoo:787697278190223370"
 
 // Dev channel and role IDs
-var Channels = ChannelConfig{
+var channels = ChannelConfig{
 	VoiceChannels: map[string]snowflake.ID{
 		"Dota": snowflake.ID(1435509993947398206),
 		"CS":   snowflake.ID(1435510029846446080),
@@ -42,11 +45,11 @@ var Channels = ChannelConfig{
 	StageChannel: snowflake.ID(991620472544440454),
 }
 
-var GardenerRoleID = snowflake.ID(1435510452795871232)
-var SignupEmoji = "khezuBrain:1329032244580323349"
-var ProcessedEmoji = "ruggahPain:951843834554376262"
+var gardenerRoleID = snowflake.ID(1435510452795871232)
+var signupEmoji = "khezuBrain:1329032244580323349"
+var processedEmoji = "ruggahPain:951843834554376262"
 
-var OGGames = []discord.StringSelectMenuOption{
+var oGGames = []discord.StringSelectMenuOption{
 	{
 		Label: "Dota",
 		Value: "Dota",
@@ -69,7 +72,7 @@ var OGGames = []discord.StringSelectMenuOption{
 	},
 }
 
-var Gardeners = []discord.ApplicationCommandOptionChoiceString{
+var gardeners = []discord.ApplicationCommandOptionChoiceString{
 	{
 		Name:  "N1k",
 		Value: "N1k",
@@ -92,7 +95,7 @@ var Gardeners = []discord.ApplicationCommandOptionChoiceString{
 	},
 }
 
-var GardenerIDsMap = map[snowflake.ID]string{
+var gardenerIDsMap = map[snowflake.ID]string{
 	293360731867316225: "N1k",
 	204923365205475329: "Kit",
 	754724309276164159: "WW",
@@ -100,7 +103,7 @@ var GardenerIDsMap = map[snowflake.ID]string{
 	332438787588227072: "Sam",
 }
 
-var EventModal = discord.ModalCreate{
+var eventModal = discord.ModalCreate{
 	CustomID: "event_modal",
 	Title:    "Event Modal",
 	Components: []discord.LayoutComponent{
@@ -109,7 +112,7 @@ var EventModal = discord.ModalCreate{
 			Description: "Select the type of event",
 			Component: discord.StringSelectMenuComponent{
 				CustomID: "event_type",
-				Options:  OGGames,
+				Options:  oGGames,
 				Required: true,
 			},
 		},
@@ -151,4 +154,18 @@ var EventModal = discord.ModalCreate{
 			},
 		},
 	},
+}
+
+func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon {
+	resp, err := http.Get(attachment.URL)
+	if err != nil {
+		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		return nil
+	}
+	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
+	if err != nil {
+		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		return nil
+	}
+	return banner
 }

@@ -3,7 +3,6 @@ package signups
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -23,7 +22,7 @@ var Event = discord.SlashCommandCreate{
 func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		// Show modal to collect event details
-		if err := e.Modal(EventModal); err != nil {
+		if err := e.Modal(eventModal); err != nil {
 			return err
 		}
 
@@ -45,11 +44,11 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						return
 					}
 
-					replyText := "Hey <@&" + GardenerRoleID.String() + ">\n\n" +
+					replyText := "Hey <@&" + gardenerRoleID.String() + ">\n\n" +
 						"Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
-						"Please react with <:" + SignupEmoji + "> to sign up!."
+						"Please react with <:" + signupEmoji + "> to sign up!."
 
 					var banner *discord.Icon
 					attachments, provided := m.Data.OptAttachments("event_banner")
@@ -76,7 +75,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					}
 
 					// Add reaction to the message
-					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, SignupEmoji); err != nil {
+					if err := m.Client().Rest.AddReaction(msg.ChannelID, msg.ID, signupEmoji); err != nil {
 						m.Client().Logger.Error("Failed to add reaction to event message", slog.Any("err", err))
 					}
 
@@ -86,7 +85,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.VoiceChannels["Dota"],
+							ChannelID:          channels.VoiceChannels["Dota"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -97,7 +96,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeVoice,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.VoiceChannels["CS"],
+							ChannelID:          channels.VoiceChannels["CS"],
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -109,7 +108,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: Channels.ExternalChannels["MLBB"],
+								Location: channels.ExternalChannels["MLBB"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -122,7 +121,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							EntityType:   discord.ScheduledEventEntityTypeExternal,
 							PrivacyLevel: discord.ScheduledEventPrivacyLevelGuildOnly,
 							EntityMetaData: &discord.EntityMetaData{
-								Location: Channels.ExternalChannels["HoK"],
+								Location: channels.ExternalChannels["HoK"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
@@ -134,7 +133,7 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							Name:               m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name"),
 							EntityType:         discord.ScheduledEventEntityTypeStageInstance,
 							PrivacyLevel:       discord.ScheduledEventPrivacyLevelGuildOnly,
-							ChannelID:          Channels.StageChannel,
+							ChannelID:          channels.StageChannel,
 							ScheduledStartTime: time.Unix(unixValue, 0),
 							Image:              banner,
 						}); err != nil {
@@ -153,18 +152,4 @@ func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		}()
 		return nil
 	}
-}
-
-func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon {
-	resp, err := http.Get(attachment.URL)
-	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
-		return nil
-	}
-	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
-	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
-		return nil
-	}
-	return banner
 }
