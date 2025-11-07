@@ -57,6 +57,8 @@ func main() {
 	h := handler.New()
 	h.SlashCommand("/event", signups.EventCommandHandler(b))
 	h.MessageCommand("/Roll Gardener", signups.GardenerCommandHandler(b))
+	h.SlashCommand("/manual", signups.ManualCommandHandler(b))
+	h.SlashCommand("/edit", signups.EditCommandHandler(b))
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), handlers.MessageHandler(b)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))
