@@ -13,13 +13,11 @@ import (
 	"clockey/app"
 	"clockey/app/commands"
 	"clockey/app/commands/signups"
-	"clockey/app/handlers"
 	"clockey/database"
-
-	_ "modernc.org/sqlite"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
+	_ "modernc.org/sqlite"
 )
 
 var (
@@ -55,12 +53,15 @@ func main() {
 	})
 
 	h := handler.New()
+	h.Group(func(r handler.Router) {
+
+	})
 	h.SlashCommand("/event", signups.EventCommandHandler(b))
 	h.MessageCommand("/Roll Gardener", signups.GardenerCommandHandler(b))
 	h.SlashCommand("/manual", signups.ManualCommandHandler(b))
 	h.SlashCommand("/edit", signups.EditCommandHandler(b))
 
-	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), handlers.MessageHandler(b)); err != nil {
+	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))
 		os.Exit(-1)
 	}
