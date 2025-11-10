@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"clockey/database"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
@@ -26,7 +26,7 @@ func New(cfg Config, version string, commit string, db Database) *Bot {
 }
 
 type Database struct {
-	Queries *database.Queries
+	Queries *sqlc.Queries
 	Conn    *sql.DB
 }
 

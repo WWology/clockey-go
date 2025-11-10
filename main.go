@@ -13,7 +13,7 @@ import (
 	"clockey/app"
 	"clockey/app/commands"
 	"clockey/app/commands/signups"
-	"clockey/database"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
@@ -48,7 +48,7 @@ func main() {
 	slog.Info("Syncing commands", slog.Bool("sync", *shouldSyncCommands))
 
 	b := app.New(*cfg, Version, Commit, app.Database{
-		Queries: database.New(db),
+		Queries: sqlc.New(db),
 		Conn:    db,
 	})
 

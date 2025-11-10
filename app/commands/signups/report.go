@@ -2,6 +2,7 @@ package signups
 
 import (
 	"clockey/app"
+	"sync"
 	"time"
 
 	"github.com/disgoorg/disgo/discord"
@@ -72,10 +73,12 @@ func ReportCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 
 func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate, endDate time.Time) error {
 	// TODO
-	panic("unimplemented")
+	panic("not implemented")
 }
 
 func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate, endDate time.Time) error {
-	// TODO
-	panic("unimplemented")
+	var wg sync.WaitGroup
+
+	wg.Wait()
+	return nil
 }
