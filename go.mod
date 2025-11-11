@@ -1,8 +1,6 @@
 module clockey
 
-go 1.24.0
-
-toolchain go1.24.5
+go 1.25.0
 
 require (
 	github.com/disgoorg/disgo v0.19.0-rc.10.0.20251022105115-748704344d1e
