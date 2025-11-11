@@ -45,9 +45,11 @@ var channels = ChannelConfig{
 	StageChannel: snowflake.ID(991620472544440454),
 }
 
-var gardenerRoleID = snowflake.ID(1435510452795871232)
-var signupEmoji = "khezuBrain:1329032244580323349"
-var processedEmoji = "ruggahPain:951843834554376262"
+const (
+	gardenerRoleID = snowflake.ID(1435510452795871232)
+	signupEmoji    = "khezuBrain:1329032244580323349"
+	processedEmoji = "ruggahPain:951843834554376262"
+)
 
 var oGGames = []discord.StringSelectMenuOption{
 	{

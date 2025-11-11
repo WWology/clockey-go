@@ -1,5 +1,7 @@
 CREATE TABLE
     IF NOT EXISTS scoreboards (
         id INTEGER PRIMARY KEY,
-        score INTEGER NOT NULL
+        member INTEGER NOT NULL,
+        score INTEGER NOT NULL,
+        game TEXT NOT NULL
     );

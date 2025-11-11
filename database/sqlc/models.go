@@ -4,16 +4,6 @@
 
 package sqlc
 
-type CsScoreboard struct {
-	ID    int64
-	Score int64
-}
-
-type DotaScoreboard struct {
-	ID    int64
-	Score int64
-}
-
 type Event struct {
 	ID       int64
 	Name     string
@@ -23,12 +13,9 @@ type Event struct {
 	Hours    int64
 }
 
-type HokScoreboard struct {
-	ID    int64
-	Score int64
-}
-
-type MlbbScoreboard struct {
-	ID    int64
-	Score int64
+type Scoreboard struct {
+	ID     int64
+	Member int64
+	Score  int64
+	Game   string
 }
