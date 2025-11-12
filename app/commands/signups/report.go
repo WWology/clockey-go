@@ -98,7 +98,7 @@ func GenerateGardenerReport(b *app.Bot, startDate time.Time, endDate time.Time) 
 	}
 
 	for _, events := range <-invoices {
-
+		panic("todo")
 	}
 
 	wg.Wait()
