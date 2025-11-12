@@ -14,7 +14,6 @@ type Event struct {
 }
 
 type Scoreboard struct {
-	ID     int64
 	Member int64
 	Score  int64
 	Game   string

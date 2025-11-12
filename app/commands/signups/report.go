@@ -2,6 +2,9 @@ package signups
 
 import (
 	"clockey/app"
+	"clockey/database/sqlc"
+	"context"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -63,21 +66,40 @@ func ReportCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		}
 
 		if data.String("report_option") == "gardener" {
-			return GenerateGardenerReport(b, e, startDate, endDate)
+			return GenerateGardenerReport(b, startDate, endDate)
 		} else {
-			return GenerateGameReport(b, e, startDate, endDate)
+			return GenerateGameReport(b, startDate, endDate)
 		}
 
 	}
 }
 
-func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate, endDate time.Time) error {
+func GenerateGameReport(b *app.Bot, startDate time.Time, endDate time.Time) error {
 	// TODO
 	panic("not implemented")
 }
 
-func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate, endDate time.Time) error {
+func GenerateGardenerReport(b *app.Bot, startDate time.Time, endDate time.Time) error {
 	var wg sync.WaitGroup
+
+	invoices := make(chan []sqlc.Event, 5)
+	for id, name := range gardenerIDsMap {
+		wg.Go(func() {
+			if rows, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
+				Start:    startDate.Unix(),
+				End:      endDate.Unix(),
+				Gardener: int64(id),
+			}); err == nil {
+				invoices <- rows
+			} else {
+				b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
+			}
+		})
+	}
+
+	for _, events := range <-invoices {
+
+	}
 
 	wg.Wait()
 	return nil

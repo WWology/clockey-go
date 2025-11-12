@@ -40,12 +40,12 @@ FROM (
         game = ?
 )
 WHERE
-    id = ?
+    member = ?
 `
 
 type GetMemberScoreForGameParams struct {
-	Game string
-	ID   int64
+	Game   string
+	Member int64
 }
 
 type GetMemberScoreForGameRow struct {
@@ -54,7 +54,7 @@ type GetMemberScoreForGameRow struct {
 }
 
 func (q *Queries) GetMemberScoreForGame(ctx context.Context, arg GetMemberScoreForGameParams) (GetMemberScoreForGameRow, error) {
-	row := q.db.QueryRowContext(ctx, getMemberScoreForGame, arg.Game, arg.ID)
+	row := q.db.QueryRowContext(ctx, getMemberScoreForGame, arg.Game, arg.Member)
 	var i GetMemberScoreForGameRow
 	err := row.Scan(&i.Position, &i.Score)
 	return i, err
@@ -62,14 +62,14 @@ func (q *Queries) GetMemberScoreForGame(ctx context.Context, arg GetMemberScoreF
 
 const getWinnerForGame = `-- name: GetWinnerForGame :many
 SELECT
-    position, id, score
+    position, member, score
 FROM (
     SELECT
         DENSE_RANK() OVER (
             ORDER BY
                 score DESC
         ) position,
-        id,
+        member,
         score
     FROM
         scoreboards
@@ -82,7 +82,7 @@ WHERE
 
 type GetWinnerForGameRow struct {
 	Position interface{}
-	ID       int64
+	Member   int64
 	Score    int64
 }
 
@@ -95,7 +95,7 @@ func (q *Queries) GetWinnerForGame(ctx context.Context, game string) ([]GetWinne
 	var items []GetWinnerForGameRow
 	for rows.Next() {
 		var i GetWinnerForGameRow
-		if err := rows.Scan(&i.Position, &i.ID, &i.Score); err != nil {
+		if err := rows.Scan(&i.Position, &i.Member, &i.Score); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -115,7 +115,7 @@ SELECT
         ORDER BY
             score DESC
     ) position,
-    id,
+    member,
     score
 FROM
     scoreboards
@@ -125,7 +125,7 @@ WHERE
 
 type ShowScoreboardForGameRow struct {
 	Position interface{}
-	ID       int64
+	Member   int64
 	Score    int64
 }
 
@@ -138,7 +138,7 @@ func (q *Queries) ShowScoreboardForGame(ctx context.Context, game string) ([]Sho
 	var items []ShowScoreboardForGameRow
 	for rows.Next() {
 		var i ShowScoreboardForGameRow
-		if err := rows.Scan(&i.Position, &i.ID, &i.Score); err != nil {
+		if err := rows.Scan(&i.Position, &i.Member, &i.Score); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

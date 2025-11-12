@@ -13,7 +13,7 @@ SELECT
         ORDER BY
             score DESC
     ) position,
-    id,
+    member,
     score
 FROM
     scoreboards
@@ -28,14 +28,14 @@ WHERE
 
 -- name: GetWinnerForGame :many
 SELECT
-    position, id, score
+    position, member, score
 FROM (
     SELECT
         DENSE_RANK() OVER (
             ORDER BY
                 score DESC
         ) position,
-        id,
+        member,
         score
     FROM
         scoreboards
@@ -61,4 +61,4 @@ FROM (
         game = ?
 )
 WHERE
-    id = ?;
+    member = ?;
