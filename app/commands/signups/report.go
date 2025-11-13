@@ -79,28 +79,35 @@ func GenerateGameReport(b *app.Bot, startDate time.Time, endDate time.Time) erro
 	panic("not implemented")
 }
 
+type Invoice struct {
+	Gardener string
+	Events   []sqlc.Event
+}
+
 func GenerateGardenerReport(b *app.Bot, startDate time.Time, endDate time.Time) error {
 	var wg sync.WaitGroup
 
-	invoices := make(chan []sqlc.Event, 5)
+	invoices := make(chan Invoice, 5)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
-			if rows, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
+			if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
 				Start:    startDate.Unix(),
 				End:      endDate.Unix(),
 				Gardener: int64(id),
 			}); err == nil {
-				invoices <- rows
+				invoices <- Invoice{Gardener: name, Events: events}
 			} else {
 				b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
 			}
 		})
 	}
+	wg.Wait()
+	close(invoices)
 
-	for _, events := range <-invoices {
+	for events := range invoices {
+		// TODO
 		panic("todo")
 	}
 
-	wg.Wait()
 	return nil
 }

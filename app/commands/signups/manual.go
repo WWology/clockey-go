@@ -132,6 +132,8 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						}); err != nil {
 							m.Client().Logger.Error("Failed to create scheduled event", slog.Any("err", err))
 						}
+					default:
+						panic("Unknown event type")
 					}
 
 				},
