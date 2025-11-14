@@ -11,6 +11,7 @@ var Commands = []discord.ApplicationCommandCreate{
 	signups.Gardener,
 	signups.Manual,
 	signups.Edit,
+	signups.Report,
 	test,
 	version,
 }
