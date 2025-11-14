@@ -3,7 +3,6 @@ package signups
 import (
 	"clockey/app"
 	"clockey/database/sqlc"
-	"clockey/test"
 	"context"
 	"fmt"
 	"log/slog"
@@ -105,17 +104,17 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 	invoices := make(chan Invoice, 5)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
-			// if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
-			// 	Start:    startDate.Unix(),
-			// 	End:      endDate.Unix(),
-			// 	Gardener: int64(id),
-			// }); err == nil {
-			// 	invoices <- Invoice{Gardener: name, Events: events}
-			// } else {
-			// 	b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
-			// }
-			events := test.GetTestEventsForGardener(int64(id))
-			invoices <- Invoice{Gardener: name, Events: events}
+			if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
+				Start:    startDate.Unix(),
+				End:      endDate.Unix(),
+				Gardener: int64(id),
+			}); err == nil {
+				invoices <- Invoice{Gardener: name, Events: events}
+			} else {
+				b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
+			}
+			// events := test.GetTestEventsForGardener(int64(id))
+			// invoices <- Invoice{Gardener: name, Events: events}
 		})
 	}
 	wg.Wait()
