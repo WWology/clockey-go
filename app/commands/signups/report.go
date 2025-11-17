@@ -87,13 +87,94 @@ func ReportCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	}
 }
 
-func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time, endDate time.Time) error {
-	//
-	//  TODO
-	panic("unimplemented")
+type GameReportResult struct {
+	Game   string
+	Events []sqlc.Event
 }
 
-type Invoice struct {
+func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time, endDate time.Time) error {
+	var wg sync.WaitGroup
+
+	invoices := make(chan GameReportResult, 5)
+	for _, game := range []string{"Dota", "CS", "MLBB", "HoK", "Other"} {
+		wg.Go(func() {
+			if events, err := b.DB.Queries.GetEventsForGame(context.TODO(), sqlc.GetEventsForGameParams{
+				Start: startDate.Unix(),
+				End:   endDate.Unix(),
+				Type:  game,
+			}); err == nil {
+				invoices <- GameReportResult{Game: game, Events: events}
+			} else {
+				b.Client.Logger.Error("Failed to get invoice ", slog.Any("game", game))
+			}
+			// events := test.GetTestEventsForGame(game)
+			// invoices <- GameReportResult{Game: game, Events: events}
+		})
+	}
+	wg.Wait()
+	close(invoices)
+
+	totalHours := 0
+	events := map[string]string{
+		"Dota":  "# Dota\n",
+		"CS":    "# CS\n",
+		"MLBB":  "# MLBB\n",
+		"HoK":   "# HoK\n",
+		"Other": "# Other\n",
+	}
+	for invoice := range invoices {
+		for _, event := range invoice.Events {
+			schedule := time.Unix(event.Time, 0).Format("02 Jan 2006")
+			events[invoice.Game] += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
+			totalHours += int(event.Hours)
+		}
+	}
+
+	layout := []discord.LayoutComponent{
+		discord.TextDisplayComponent{
+			Content: fmt.Sprintf("# Game Report\n**%s - %s**", startDate.Month().String(), endDate.Month().String()),
+		},
+		discord.ContainerComponent{
+			Components: []discord.ContainerSubComponent{
+				discord.TextDisplayComponent{
+					Content: events["Dota"],
+				},
+				discord.SeparatorComponent{},
+				discord.TextDisplayComponent{
+					Content: events["CS"],
+				},
+				discord.SeparatorComponent{},
+				discord.TextDisplayComponent{
+					Content: events["MLBB"],
+				},
+				discord.SeparatorComponent{},
+				discord.TextDisplayComponent{
+					Content: events["HoK"],
+				},
+				discord.SeparatorComponent{},
+				discord.TextDisplayComponent{
+					Content: events["Other"],
+				},
+				discord.SeparatorComponent{},
+				discord.TextDisplayComponent{
+					Content: fmt.Sprintf("**Total: %d**", totalHours),
+				},
+			},
+		},
+	}
+
+	if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
+		Components: omit.Ptr(layout),
+		Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+	}); err != nil {
+		e.Client().Logger.Error("Failed to send game report message", slog.Any("err", err))
+		return err
+	}
+
+	return nil
+}
+
+type GardenerReportResult struct {
 	Gardener string
 	Events   []sqlc.Event
 }
@@ -101,7 +182,7 @@ type Invoice struct {
 func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time, endDate time.Time) error {
 	var wg sync.WaitGroup
 
-	invoices := make(chan Invoice, 5)
+	invoices := make(chan GardenerReportResult, 5)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
 			if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
@@ -109,7 +190,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 				End:      endDate.Unix(),
 				Gardener: int64(id),
 			}); err == nil {
-				invoices <- Invoice{Gardener: name, Events: events}
+				invoices <- GardenerReportResult{Gardener: name, Events: events}
 			} else {
 				b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
 			}
@@ -125,7 +206,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 		var dotaEvents, csEvents, mlbbEvents, hokEvents, otherEvents string
 		gardenerHours := 0
 		for _, event := range invoice.Events {
-			schedule := time.Unix(event.Time, 0).Format("02-01-2006")
+			schedule := time.Unix(event.Time, 0).Format("02 Jan 2006")
 			switch event.Type {
 			case "Dota":
 				dotaEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)

@@ -71,6 +71,84 @@ var TestEventsForGardener = map[int64][]sqlc.Event{
 	},
 }
 
+var TestEventsForGame = map[string][]sqlc.Event{
+	"Dota": {
+		{ID: 1, Name: "OG vs MOUZ", Time: 1758794400, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 2, Name: "OG.LATAM vs HunterZ", Time: 1758895200, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 3, Name: "OG vs. Aurora", Time: 1758963600, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 4, Name: "OG.LATAM vs Wildcard", Time: 1758943800, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 5, Name: "OG vs sifr00", Time: 1759132800, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 6, Name: "OG vs Pipsqueak + 4", Time: 1759219200, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 7, Name: "OG.LATAM vs Perros angryy", Time: 1759456800, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 8, Name: "OG vs DOGSENT", Time: 1759489200, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 9, Name: "OG.LATAM vs HunterZ", Time: 1759629600, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 10, Name: "OG vs AVULUS", Time: 1759651200, Type: "Dota", Gardener: 754724309276164159, Hours: 3},
+		{ID: 11, Name: "OG vs NGX", Time: 1760097600, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 12, Name: "OG vs 1w", Time: 1760119200, Type: "Dota", Gardener: 754724309276164159, Hours: 4},
+		{ID: 27, Name: "OG.LATAM vs Flame", Time: 1758056400, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 28, Name: "OG vs Zero Tenacity", Time: 1758708000, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 29, Name: "OG.LATAM vs Perrito Panzon", Time: 1758760200, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 30, Name: "OG vs. Flame", Time: 1758848400, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 31, Name: "OG vs. Kalmychata", Time: 1758888000, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 32, Name: "OG.LATAM vs HunterZ", Time: 1758906000, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 33, Name: "OG vs. Chimpanzini bananini", Time: 1758920400, Type: "Dota", Gardener: 293360731867316225, Hours: 6},
+		{ID: 36, Name: "OG vs Mouz", Time: 1759257000, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 38, Name: "OG vs Virtus Pro", Time: 1759588500, Type: "Dota", Gardener: 293360731867316225, Hours: 4},
+		{ID: 39, Name: "OG vs Runa Team", Time: 1759759200, Type: "Dota", Gardener: 293360731867316225, Hours: 3},
+		{ID: 40, Name: "OG vs 1w Team", Time: 1759838400, Type: "Dota", Gardener: 293360731867316225, Hours: 3},
+		{ID: 41, Name: "OG vs Apex Genesis", Time: 1759932000, Type: "Dota", Gardener: 293360731867316225, Hours: 3},
+		{ID: 46, Name: "OG LATAM vs. Sentinel Esports", Time: 1758661200, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 48, Name: "OG LATAM vs. Perú Rejects", Time: 1758819600, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 52, Name: "OG vs Avulus", Time: 1758913200, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 56, Name: "OG vs Avulus", Time: 1758972600, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 57, Name: "OG vs Pipsqueak+4", Time: 1759424400, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 59, Name: "OG.LATAM vs TaiLung Mafia", Time: 1759543200, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 61, Name: "OG vs AVULUS", Time: 1759575600, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+		{ID: 62, Name: "OG.LATAM vs Flame", Time: 1759608000, Type: "Dota", Gardener: 172360818715918337, Hours: 4},
+	},
+	"CS": {
+		{ID: 13, Name: "OG vs. B8", Time: 1758272400, Type: "CS", Gardener: 754724309276164159, Hours: 4},
+		{ID: 14, Name: "OG vs. SINNERS", Time: 1758877200, Type: "CS", Gardener: 754724309276164159, Hours: 4},
+		{ID: 15, Name: "OG vs SkinRave", Time: 1759586400, Type: "CS", Gardener: 754724309276164159, Hours: 4},
+		{ID: 34, Name: "OG vs Basement boys", Time: 1758988800, Type: "CS", Gardener: 293360731867316225, Hours: 4},
+		{ID: 35, Name: "OG vs Passion UA", Time: 1759078800, Type: "CS", Gardener: 293360731867316225, Hours: 4},
+		{ID: 37, Name: "CS - OG vs Texass Outlaws", Time: 1759442400, Type: "CS", Gardener: 293360731867316225, Hours: 4},
+		{ID: 42, Name: "OG vs Ninjas In Pyjamas", Time: 1758196800, Type: "CS", Gardener: 172360818715918337, Hours: 4},
+		{ID: 47, Name: "OG vs AM", Time: 1758801600, Type: "CS", Gardener: 172360818715918337, Hours: 4},
+		{ID: 51, Name: "OG vs ECSTATIC", Time: 1758898800, Type: "CS", Gardener: 172360818715918337, Hours: 4},
+		{ID: 53, Name: "OG vs Mouz NXT", Time: 1759215600, Type: "CS", Gardener: 172360818715918337, Hours: 4},
+		{ID: 54, Name: "OG vs Alliance", Time: 1759226400, Type: "CS", Gardener: 172360818715918337, Hours: 2},
+		{ID: 55, Name: "OG vs BIG", Time: 1759238100, Type: "CS", Gardener: 172360818715918337, Hours: 2},
+	},
+	"MLBB": {
+		{ID: 18, Name: "SRG.OG vs Aero Esports", Time: 1758947400, Type: "MLBB", Gardener: 754724309276164159, Hours: 1},
+		{ID: 19, Name: "SRG.OG vs Team Vamos", Time: 1759552200, Type: "MLBB", Gardener: 754724309276164159, Hours: 1},
+		{ID: 20, Name: "SRG.OG vs Team Rey", Time: 1760080500, Type: "MLBB", Gardener: 754724309276164159, Hours: 1},
+		{ID: 43, Name: "SRG.OG vs TODAK", Time: 1758274200, Type: "MLBB", Gardener: 172360818715918337, Hours: 2},
+		{ID: 50, Name: "SRG.OG vs CG Esports", Time: 1759042800, Type: "MLBB", Gardener: 172360818715918337, Hours: 1},
+		{ID: 60, Name: "SRG.OG vs GamesMY Kelantan", Time: 1759638600, Type: "MLBB", Gardener: 172360818715918337, Hours: 1},
+	},
+	"HoK": {
+		{ID: 21, Name: "OG vs 9z Team", Time: 1757898000, Type: "HoK", Gardener: 754724309276164159, Hours: 2},
+		{ID: 22, Name: "OG vs Blood Thirsty Kings", Time: 1757919600, Type: "HoK", Gardener: 754724309276164159, Hours: 2},
+		{ID: 23, Name: "OG vs 9z Team", Time: 1758351600, Type: "HoK", Gardener: 754724309276164159, Hours: 3},
+		{ID: 24, Name: "OG vs 9z Team", Time: 1758513600, Type: "HoK", Gardener: 754724309276164159, Hours: 3},
+		{ID: 25, Name: "OG vs 9z Team", Time: 1758945600, Type: "HoK", Gardener: 754724309276164159, Hours: 1},
+		{ID: 26, Name: "OG vs Twisted Minds", Time: 1759029600, Type: "HoK", Gardener: 754724309276164159, Hours: 1},
+		{ID: 44, Name: "OG vs Twisted Minds", Time: 1758265200, Type: "HoK", Gardener: 172360818715918337, Hours: 3},
+		{ID: 45, Name: "OG vs Twisted Minds", Time: 1758427200, Type: "HoK", Gardener: 172360818715918337, Hours: 3},
+	},
+	"Rivals": {
+		{ID: 49, Name: "OG vs. Citadel Gaming", Time: 1758900600, Type: "Rivals", Gardener: 172360818715918337, Hours: 1},
+		{ID: 58, Name: "OG Seed vs PHASE", Time: 1759500000, Type: "Rivals", Gardener: 172360818715918337, Hours: 1},
+	},
+	"Other": {},
+}
+
 func GetTestEventsForGardener(id int64) []sqlc.Event {
 	return TestEventsForGardener[id]
+}
+
+func GetTestEventsForGame(game string) []sqlc.Event {
+	return TestEventsForGame[game]
 }
