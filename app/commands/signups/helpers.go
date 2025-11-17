@@ -171,3 +171,12 @@ func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon
 	}
 	return banner
 }
+
+func processed(msg discord.Message) bool {
+	for _, reaction := range msg.Reactions {
+		if reaction.Emoji.Name == processedEmoji {
+			return true
+		}
+	}
+	return false
+}

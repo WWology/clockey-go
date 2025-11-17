@@ -29,11 +29,10 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 	return func(data discord.MessageCommandInteractionData, e *handler.CommandEvent) error {
 		// Check if message has already been processed
 		if processed(data.TargetMessage()) {
-			e.CreateMessage(discord.MessageCreate{
+			return e.CreateMessage(discord.MessageCreate{
 				Content: "This message has been processed for signups",
 				Flags:   discord.MessageFlagEphemeral,
 			})
-			return nil
 		}
 
 		// Show gardener selection menu
@@ -120,15 +119,6 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 
 		return nil
 	}
-}
-
-func processed(msg discord.Message) bool {
-	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == processedEmoji {
-			return true
-		}
-	}
-	return false
 }
 
 func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (discord.StringSelectMenuComponent, error) {
