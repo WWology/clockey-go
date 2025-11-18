@@ -18,6 +18,4 @@ var Commands = []discord.ApplicationCommandCreate{
 	// Predictions
 
 	// Other
-	test,
-	version,
 }
