@@ -31,6 +31,10 @@ var BestOf = discord.SlashCommandCreate{
 					Name:  "HoK",
 					Value: "HoK",
 				},
+				{
+					Name:  "Extra",
+					Value: "EX",
+				},
 			},
 		},
 		discord.ApplicationCommandOptionInt{
