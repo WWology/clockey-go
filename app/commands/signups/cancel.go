@@ -1,9 +1,12 @@
 package signups
 
 import (
-	"clockey/app"
 	"context"
+	"fmt"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
@@ -64,7 +67,29 @@ func CancelCommandHandler(b app.Bot) handler.MessageCommandHandler {
 				return
 			case c := <-ch:
 				if c.Data.CustomID() == "cancel_event_yes" {
-					panic("todo: implement cancel event")
+					eventType, name, eventTime, hours, err := parseMessage(c.Message.Content)
+					if err != nil {
+						c.CreateMessage(discord.MessageCreate{
+							Content: "Error parsing message, please try again",
+						})
+						return
+					}
+
+					if err := b.DB.Queries.DeleteEvent(ctx, sqlc.DeleteEventParams{
+						Type:  eventType,
+						Name:  name,
+						Time:  eventTime,
+						Hours: hours,
+					}); err != nil {
+						c.CreateMessage(discord.MessageCreate{
+							Content: "Error cancelling event, please try again",
+						})
+						return
+					}
+					c.CreateMessage(discord.MessageCreate{
+						Content: fmt.Sprintf("%s - %s cancelled", eventType, name),
+					})
+					c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), c.Message.ID, processedEmoji)
 				} else {
 					return
 				}

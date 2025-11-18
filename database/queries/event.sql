@@ -3,7 +3,7 @@ INSERT INTO events (name, time, type, gardener, hours) VALUES (?, ?, ?, ?, ?);
 
 -- name: DeleteEvent :exec
 DELETE FROM events
-WHERE name = ? AND time = ?;
+WHERE name = ? AND time = ? AND type = ? AND hours = ?;
 
 -- name: GetEventsForGardener :many
 SELECT

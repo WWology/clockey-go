@@ -34,16 +34,23 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) error 
 
 const deleteEvent = `-- name: DeleteEvent :exec
 DELETE FROM events
-WHERE name = ? AND time = ?
+WHERE name = ? AND time = ? AND type = ? AND hours = ?
 `
 
 type DeleteEventParams struct {
-	Name string
-	Time int64
+	Name  string
+	Time  int64
+	Type  string
+	Hours int64
 }
 
 func (q *Queries) DeleteEvent(ctx context.Context, arg DeleteEventParams) error {
-	_, err := q.db.ExecContext(ctx, deleteEvent, arg.Name, arg.Time)
+	_, err := q.db.ExecContext(ctx, deleteEvent,
+		arg.Name,
+		arg.Time,
+		arg.Type,
+		arg.Hours,
+	)
 	return err
 }
 
