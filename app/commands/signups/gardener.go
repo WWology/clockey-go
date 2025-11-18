@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
@@ -63,7 +64,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 				},
 				func(s *events.ComponentInteractionCreate) {
 					selectedGardenerID := s.Data.(discord.StringSelectMenuInteractionData).Values[0]
-					// gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
+					gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
 
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
 					print(eventType, name, eventTime, hours)
@@ -72,13 +73,16 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						return
 					}
 
-					// b.DB.Queries.CreateEvent(ctx, database.CreateEventParams{
-					// 	Type:     eventType,
-					// 	Name:     name,
-					// 	Time:     eventTime,
-					// 	Hours:    hours,
-					// 	Gardener: gardenerID,
-					// })
+					if err := b.DB.Queries.CreateEvent(ctx, sqlc.CreateEventParams{
+						Type:     eventType,
+						Name:     name,
+						Time:     eventTime,
+						Hours:    hours,
+						Gardener: gardenerID,
+					}); err != nil {
+						s.Client().Logger.Error("Failed to create event in database", slog.Any("err", err))
+						return
+					}
 
 					if err := s.Client().Rest.AddReaction(data.TargetMessage().ChannelID, data.TargetMessage().ID, processedEmoji); err != nil {
 						s.Client().Logger.Error("Failed to add reaction", slog.Any("err", err))
