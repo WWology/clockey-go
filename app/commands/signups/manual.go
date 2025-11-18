@@ -2,6 +2,7 @@ package signups
 
 import (
 	"clockey/app"
+	"clockey/database/sqlc"
 	"context"
 	"log/slog"
 	"strconv"
@@ -65,6 +66,11 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 				func(m *events.ModalSubmitInteractionCreate) {
 					// Handle the event details submission
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
+					eventType := m.Data.StringValues("event_type")[0]
+					name := m.Data.Text("event_name")
+					hours, _ := strconv.ParseInt(m.Data.Text("event_duration"), 10, 64)
+					gardener, _ := strconv.ParseInt(m.Data.Text("gardener"), 10, 64)
+
 					if err != nil {
 						m.Client().Logger.Error("Failed to parse event_time", slog.Any("err", err))
 						m.CreateMessage(discord.MessageCreate{
@@ -73,7 +79,18 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						return
 					}
 
-					replyText := "Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
+					if err := b.DB.Queries.CreateEvent(ctx, sqlc.CreateEventParams{
+						Type:     eventType,
+						Name:     name,
+						Time:     unixValue,
+						Hours:    hours,
+						Gardener: gardener,
+					}); err != nil {
+						m.Client().Logger.Error("Failed to create event in database", slog.Any("err", err))
+						return
+					}
+
+					replyText := "Event: " + eventType + " - " + name + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
 						"Gardener: <@" + data.String("gardener") + ">"
