@@ -51,52 +51,6 @@ const (
 	processedEmoji = "ruggahPain:951843834554376262"
 )
 
-var oGGames = []discord.StringSelectMenuOption{
-	{
-		Label: "Dota",
-		Value: "Dota",
-	},
-	{
-		Label: "CS",
-		Value: "CS",
-	},
-	{
-		Label: "MLBB",
-		Value: "MLBB",
-	},
-	{
-		Label: "HoK",
-		Value: "HoK",
-	},
-	{
-		Label: "Other",
-		Value: "Other",
-	},
-}
-
-var gardeners = []discord.ApplicationCommandOptionChoiceString{
-	{
-		Name:  "N1k",
-		Value: "N1k",
-	},
-	{
-		Name:  "Kit",
-		Value: "Kit",
-	},
-	{
-		Name:  "WW",
-		Value: "WW",
-	},
-	{
-		Name:  "Bonteng",
-		Value: "Bonteng",
-	},
-	{
-		Name:  "Sam",
-		Value: "Sam",
-	},
-}
-
 var gardenerIDsMap = map[snowflake.ID]string{
 	293360731867316225: "N1k",
 	204923365205475329: "Kit",
@@ -114,7 +68,28 @@ var eventModal = discord.ModalCreate{
 			Description: "Select the type of event",
 			Component: discord.StringSelectMenuComponent{
 				CustomID: "event_type",
-				Options:  oGGames,
+				Options: []discord.StringSelectMenuOption{
+					{
+						Label: "Dota",
+						Value: "Dota",
+					},
+					{
+						Label: "CS",
+						Value: "CS",
+					},
+					{
+						Label: "MLBB",
+						Value: "MLBB",
+					},
+					{
+						Label: "HoK",
+						Value: "HoK",
+					},
+					{
+						Label: "Other",
+						Value: "Other",
+					},
+				},
 				Required: true,
 			},
 		},

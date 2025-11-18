@@ -21,7 +21,28 @@ var Manual = discord.SlashCommandCreate{
 			Name:        "gardener",
 			Description: "Gardener to work on the event",
 			Required:    true,
-			Choices:     gardeners,
+			Choices: []discord.ApplicationCommandOptionChoiceString{
+				{
+					Name:  "N1k",
+					Value: "N1k",
+				},
+				{
+					Name:  "Kit",
+					Value: "Kit",
+				},
+				{
+					Name:  "WW",
+					Value: "WW",
+				},
+				{
+					Name:  "Bonteng",
+					Value: "Bonteng",
+				},
+				{
+					Name:  "Sam",
+					Value: "Sam",
+				},
+			},
 		},
 	},
 }

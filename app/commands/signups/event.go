@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"clockey/app"
-
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
@@ -19,7 +17,7 @@ var Event = discord.SlashCommandCreate{
 	Description: "Create a new event for Gardeners to sign up for",
 }
 
-func EventCommandHandler(b *app.Bot) handler.SlashCommandHandler {
+func EventCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		// Show modal to collect event details
 		if err := e.Modal(eventModal); err != nil {

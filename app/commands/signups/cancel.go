@@ -21,7 +21,7 @@ var Cancel = discord.MessageCommandCreate{
 	},
 }
 
-func CancelCommandHandler(b app.Bot) handler.MessageCommandHandler {
+func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 	return func(data discord.MessageCommandInteractionData, e *handler.CommandEvent) error {
 		if !processed(data.TargetMessage()) {
 			return e.CreateMessage(discord.MessageCreate{
