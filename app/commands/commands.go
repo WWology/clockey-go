@@ -7,11 +7,17 @@ import (
 )
 
 var Commands = []discord.ApplicationCommandCreate{
+	// Signups
+	signups.Cancel,
+	signups.Edit,
 	signups.Event,
 	signups.Gardener,
 	signups.Manual,
-	signups.Edit,
 	signups.Report,
+
+	// Predictions
+
+	// Other
 	test,
 	version,
 }

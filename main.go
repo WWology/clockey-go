@@ -53,13 +53,12 @@ func main() {
 	})
 
 	h := handler.New()
-	h.Group(func(r handler.Router) {
-
-	})
-	h.SlashCommand("/event", signups.EventCommandHandler(b))
+	// Signups
+	h.MessageCommand("/Cancel Event", signups.CancelCommandHandler(b))
+	h.SlashCommand("/edit", signups.EditCommandHandler(b))
+	h.SlashCommand("/event", signups.EventCommandHandler())
 	h.MessageCommand("/Roll Gardener", signups.GardenerCommandHandler(b))
 	h.SlashCommand("/manual", signups.ManualCommandHandler(b))
-	h.SlashCommand("/edit", signups.EditCommandHandler(b))
 	h.SlashCommand("/report", signups.ReportCommandHandler(b))
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
