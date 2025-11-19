@@ -65,10 +65,11 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 
 		game := data.String("game")
 		user, provided := data.OptUser("user")
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
+
 		if provided && game == "Global" {
 			// Get Global Score for user
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			if res, err := b.DB.Queries.GetMemberGlobalScore(ctx, int64(user.ID)); err == nil {
 				e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %.0f, ranked at %d", user.Mention(), res.Score.Float64, res.Position.(int))),
@@ -88,6 +89,8 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			}
 		} else if provided && game != "Global" {
 			// Get Game Score for user
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
 			if res, err := b.DB.Queries.GetMemberScoreForGame(ctx, sqlc.GetMemberScoreForGameParams{
 				Game:   game,
 				Member: int64(user.ID),
@@ -143,9 +146,13 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		)
 		table.Header([]string{"Rank", "Name", "Score"})
 		offset := (i - 1) * 10
-		for _, score := range scores[offset:] {
+		end := offset + 10
+		if end > len(scores) {
+			end = len(scores)
+		}
+		for _, score := range scores[offset:end] {
 			// Check if member exists in guild
-			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err != nil {
+			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
 				name := truncate(member.EffectiveName())
 				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
 			} else {
@@ -205,7 +212,7 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			},
 		)
 		defer cls()
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		defer cancel()
 		currentPage := 0
 		for {
