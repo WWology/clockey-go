@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 )
 
 const clearScoreboardForGame = `-- name: ClearScoreboardForGame :execrows
@@ -22,6 +23,31 @@ func (q *Queries) ClearScoreboardForGame(ctx context.Context, game string) (int6
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+const getMemberGlobalScore = `-- name: GetMemberGlobalScore :one
+SELECT
+    DENSE_RANK() OVER (
+        ORDER BY
+            sum(score) DESC
+    ) position,
+    sum(score) score
+FROM
+    scoreboards
+WHERE
+    member = ?
+`
+
+type GetMemberGlobalScoreRow struct {
+	Position interface{}
+	Score    sql.NullFloat64
+}
+
+func (q *Queries) GetMemberGlobalScore(ctx context.Context, member int64) (GetMemberGlobalScoreRow, error) {
+	row := q.db.QueryRowContext(ctx, getMemberGlobalScore, member)
+	var i GetMemberGlobalScoreRow
+	err := row.Scan(&i.Position, &i.Score)
+	return i, err
 }
 
 const getMemberScoreForGame = `-- name: GetMemberScoreForGame :one
@@ -95,6 +121,49 @@ func (q *Queries) GetWinnerForGame(ctx context.Context, game string) ([]GetWinne
 	var items []GetWinnerForGameRow
 	for rows.Next() {
 		var i GetWinnerForGameRow
+		if err := rows.Scan(&i.Position, &i.Member, &i.Score); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const showGlobalScoreboard = `-- name: ShowGlobalScoreboard :many
+SELECT
+    DENSE_RANK() OVER (
+        ORDER BY
+            score DESC
+    ) position,
+    member,
+    sum(score) score
+FROM
+    scoreboards
+GROUP BY
+    member
+`
+
+type ShowGlobalScoreboardRow struct {
+	Position interface{}
+	Member   int64
+	Score    sql.NullFloat64
+}
+
+func (q *Queries) ShowGlobalScoreboard(ctx context.Context) ([]ShowGlobalScoreboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, showGlobalScoreboard)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ShowGlobalScoreboardRow
+	for rows.Next() {
+		var i ShowGlobalScoreboardRow
 		if err := rows.Scan(&i.Position, &i.Member, &i.Score); err != nil {
 			return nil, err
 		}

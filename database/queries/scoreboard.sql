@@ -62,3 +62,28 @@ FROM (
 )
 WHERE
     member = ?;
+
+-- name: ShowGlobalScoreboard :many
+SELECT
+    DENSE_RANK() OVER (
+        ORDER BY
+            score DESC
+    ) position,
+    member,
+    sum(score) score
+FROM
+    scoreboards
+GROUP BY
+    member;
+
+-- name: GetMemberGlobalScore :one
+SELECT
+    DENSE_RANK() OVER (
+        ORDER BY
+            sum(score) DESC
+    ) position,
+    sum(score) score
+FROM
+    scoreboards
+WHERE
+    member = ?;
