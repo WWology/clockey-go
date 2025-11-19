@@ -22,4 +22,5 @@ var Commands = []discord.ApplicationCommandCreate{
 	predictions.Show,
 
 	// Other
+	Next,
 }

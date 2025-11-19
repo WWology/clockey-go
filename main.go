@@ -37,7 +37,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	db, err := sql.Open("sqlite", "sqlite://database/clockey.db")
+	db, err := sql.Open("sqlite", "database/clockey.db")
 	if err != nil {
 		slog.Error("Failed to open database", slog.Any("err", err))
 		os.Exit(-1)
@@ -65,6 +65,8 @@ func main() {
 	h.SlashCommand("/bo", predictions.BestOfCommandHandler())
 	h.SlashCommand("/deletebo", predictions.DeleteBestOfCommandHandler())
 	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
+	// Other
+	h.SlashCommand("/next", commands.NextCommandHandler())
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))
