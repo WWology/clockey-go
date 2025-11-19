@@ -5,6 +5,7 @@ import (
 	"clockey/app"
 	"clockey/database/sqlc"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -64,9 +65,29 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 
 		game := data.String("game")
 		user, provided := data.OptUser("user")
-		if provided {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if provided && game == "Global" {
+			// Get Global Score for user
+			if res, err := b.DB.Queries.GetMemberGlobalScore(ctx, int64(user.ID)); err == nil {
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %.0f, ranked at %d", user.Mention(), res.Score.Float64, res.Position.(int))),
+				})
+				return nil
+			} else if err == sql.ErrNoRows {
+				// If user's not found
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr(fmt.Sprintf("%s isn't found on the %s scoreboard", user.Mention(), game)),
+				})
+				return nil
+			} else {
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr("Something wrong has happened, please try again"),
+				})
+				return err
+			}
+		} else if provided && game != "Global" {
+			// Get Game Score for user
 			if res, err := b.DB.Queries.GetMemberScoreForGame(ctx, sqlc.GetMemberScoreForGameParams{
 				Game:   game,
 				Member: int64(user.ID),
@@ -75,9 +96,15 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					Content: omit.Ptr(fmt.Sprintf("The %s prediction score for %s is %d, ranked at %d", game, user.Mention(), res.Score, res.Position.(int))),
 				})
 				return nil
-			} else {
+			} else if err == sql.ErrNoRows {
+				// If user's not found
 				e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("%s isn't found on the %s scoreboard", user.Mention(), game)),
+				})
+				return nil
+			} else {
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr("Something wrong has happened, please try again"),
 				})
 				return err
 			}
@@ -145,6 +172,20 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 					},
 				},
 			},
+			discord.ActionRowComponent{
+				Components: []discord.InteractiveComponent{
+					discord.ButtonComponent{
+						Style:    discord.ButtonStyleSecondary,
+						Label:    "⏮️",
+						CustomID: "prev_show",
+					},
+					discord.ButtonComponent{
+						Style:    discord.ButtonStyleSecondary,
+						Label:    "⏭️",
+						CustomID: "next_show",
+					},
+				},
+			},
 		}
 		layouts = append(layouts, layout)
 	}
@@ -166,17 +207,34 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		defer cls()
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer cancel()
+		currentPage := 0
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case c := <-ch:
-
+				if c.Data.CustomID() == "next_show" {
+					currentPage++
+					if currentPage >= totalPage {
+						currentPage = 0
+					}
+				} else if c.Data.CustomID() == "prev_show" {
+					currentPage--
+					if currentPage < 0 {
+						currentPage = totalPage - 1
+					}
+				}
+				c.UpdateMessage(discord.MessageUpdate{
+					Components: omit.Ptr(layouts[currentPage]),
+					Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+				})
+			default:
+				continue
 			}
 		}
 	}()
 
-	return fmt.Errorf("Todo")
+	return nil
 }
 
 func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
