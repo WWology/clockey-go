@@ -354,6 +354,8 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 					}); err != nil {
 						c.Client().Logger.Error("Failed to update message to Sam", slog.Any("err", err))
 					}
+				default:
+					continue
 				}
 
 			}
