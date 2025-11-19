@@ -12,6 +12,7 @@ import (
 
 	"clockey/app"
 	"clockey/app/commands"
+	"clockey/app/commands/predictions"
 	"clockey/app/commands/signups"
 	"clockey/database/sqlc"
 
@@ -60,6 +61,10 @@ func main() {
 	h.MessageCommand("/Roll Gardener", signups.GardenerCommandHandler(b))
 	h.SlashCommand("/manual", signups.ManualCommandHandler(b))
 	h.SlashCommand("/report", signups.ReportCommandHandler(b))
+	// Predictions
+	h.SlashCommand("/bo", predictions.BestOfCommandHandler())
+	h.SlashCommand("/deletebo", predictions.DeleteBestOfCommandHandler())
+	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))

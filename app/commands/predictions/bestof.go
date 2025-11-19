@@ -2,6 +2,7 @@ package predictions
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
@@ -14,10 +15,11 @@ var BestOf = discord.SlashCommandCreate{
 		discord.ApplicationCommandOptionString{
 			Name:        "game",
 			Description: "The game to create prediction roles for",
+			Required:    true,
 			Choices: []discord.ApplicationCommandOptionChoiceString{
 				{
 					Name:  "Dota",
-					Value: "D",
+					Value: "Dota",
 				},
 				{
 					Name:  "CS",
@@ -40,6 +42,7 @@ var BestOf = discord.SlashCommandCreate{
 		discord.ApplicationCommandOptionInt{
 			Name:        "series_length",
 			Description: "The length of the series",
+			Required:    true,
 			Choices: []discord.ApplicationCommandOptionChoiceInt{
 				{
 					Name:  "Bo1",
@@ -140,5 +143,162 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 		return e.CreateMessage(discord.MessageCreate{
 			Content: "Prediction roles created for " + game + " best of " + fmt.Sprint(seriesLength),
 		})
+	}
+}
+
+var DeleteBestOf = discord.SlashCommandCreate{
+	Name:        "deletebo",
+	Description: "Delete all prediction roles for selected game",
+	Options: []discord.ApplicationCommandOption{
+		discord.ApplicationCommandOptionString{
+			Name:        "game",
+			Description: "The game to delete prediction roles for",
+			Required:    true,
+			Choices: []discord.ApplicationCommandOptionChoiceString{
+				{
+					Name:  "Dota",
+					Value: "Dota",
+				},
+				{
+					Name:  "CS",
+					Value: "CS",
+				},
+				{
+					Name:  "MLBB",
+					Value: "MLBB",
+				},
+				{
+					Name:  "HoK",
+					Value: "HoK",
+				},
+				{
+					Name:  "Extra",
+					Value: "EX",
+				},
+			},
+		},
+		discord.ApplicationCommandOptionInt{
+			Name:        "series_length",
+			Description: "The length of the series",
+			Required:    true,
+			Choices: []discord.ApplicationCommandOptionChoiceInt{
+				{
+					Name:  "Bo1",
+					Value: 1,
+				},
+				{
+					Name:  "Bo2",
+					Value: 2,
+				},
+				{
+					Name:  "Bo3",
+					Value: 3,
+				},
+				{
+					Name:  "Bo5",
+					Value: 5,
+				},
+				{
+					Name:  "Bo7",
+					Value: 7,
+				},
+			},
+		},
+	},
+}
+
+func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
+	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
+		game := data.String("game")
+		seriesLength := data.Int("series_length")
+		switch seriesLength {
+		case 1:
+			rolesToBeDeleted := []string{
+				game + "1-0",
+				game + "0-1",
+			}
+			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
+				for _, role := range roles {
+					if slices.Contains(rolesToBeDeleted, role.Name) {
+						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+					}
+				}
+			} else {
+				return err
+			}
+		case 2:
+			rolesToBeDeleted := []string{
+				game + "2-0",
+				game + "1-1",
+				game + "0-2",
+			}
+			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
+				for _, role := range roles {
+					if slices.Contains(rolesToBeDeleted, role.Name) {
+						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+					}
+				}
+			} else {
+				return err
+			}
+		case 3:
+			rolesToBeDeleted := []string{
+				game + "2-0",
+				game + "2-1",
+				game + "1-2",
+				game + "0-2",
+			}
+			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
+				for _, role := range roles {
+					if slices.Contains(rolesToBeDeleted, role.Name) {
+						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+					}
+				}
+			} else {
+				return err
+			}
+		case 5:
+			rolesToBeDeleted := []string{
+				game + "3-0",
+				game + "3-1",
+				game + "3-2",
+				game + "2-3",
+				game + "1-3",
+				game + "0-3",
+			}
+			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
+				for _, role := range roles {
+					if slices.Contains(rolesToBeDeleted, role.Name) {
+						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+					}
+				}
+			} else {
+				return err
+			}
+		case 7:
+			rolesToBeDeleted := []string{
+				game + "4-0",
+				game + "4-1",
+				game + "4-2",
+				game + "4-3",
+				game + "3-4",
+				game + "2-4",
+				game + "1-4",
+				game + "0-4",
+			}
+			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
+				for _, role := range roles {
+					if slices.Contains(rolesToBeDeleted, role.Name) {
+						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+					}
+				}
+			} else {
+				return err
+			}
+		}
+		return e.CreateMessage(discord.MessageCreate{
+			Content: "Prediction roles deleted for " + game + " best of " + fmt.Sprint(seriesLength),
+		})
+
 	}
 }

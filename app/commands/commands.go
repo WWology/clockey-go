@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"clockey/app/commands/predictions"
 	"clockey/app/commands/signups"
 
 	"github.com/disgoorg/disgo/discord"
@@ -16,6 +17,9 @@ var Commands = []discord.ApplicationCommandCreate{
 	signups.Report,
 
 	// Predictions
+	predictions.BestOf,
+	predictions.DeleteBestOf,
+	predictions.Show,
 
 	// Other
 }
