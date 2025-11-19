@@ -1,1 +1,191 @@
 package predictions
+
+import (
+	"bytes"
+	"clockey/app"
+	"clockey/database/sqlc"
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/disgoorg/disgo/bot"
+	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/disgo/events"
+	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/omit"
+	"github.com/disgoorg/snowflake/v2"
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/renderer"
+	"github.com/olekukonko/tablewriter/tw"
+)
+
+var Show = discord.SlashCommandCreate{
+	Name:        "show",
+	Description: "Show the current prediction leaderboard or individual user score",
+	Options: []discord.ApplicationCommandOption{
+		discord.ApplicationCommandOptionString{
+			Name:        "game",
+			Description: "The game to show the leaderboard for",
+			Required:    true,
+			Choices: []discord.ApplicationCommandOptionChoiceString{
+				{
+					Name:  "Global",
+					Value: "Global",
+				},
+				{
+					Name:  "Dota",
+					Value: "Dota",
+				},
+				{
+					Name:  "CS",
+					Value: "CS",
+				},
+				{
+					Name:  "MLBB",
+					Value: "MLBB",
+				},
+				{
+					Name:  "HoK",
+					Value: "HoK",
+				},
+			},
+		},
+		discord.ApplicationCommandOptionUser{
+			Name:        "user",
+			Description: "The user to show the score for (leave empty to show the full leaderboard)",
+			Required:    false,
+		},
+	},
+}
+
+func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
+	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
+		e.DeferCreateMessage(false)
+
+		game := data.String("game")
+		user, provided := data.OptUser("user")
+		if provided {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if res, err := b.DB.Queries.GetMemberScoreForGame(ctx, sqlc.GetMemberScoreForGameParams{
+				Game:   game,
+				Member: int64(user.ID),
+			}); err == nil {
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr(fmt.Sprintf("The %s prediction score for %s is %d, ranked at %d", game, user.Mention(), res.Score, res.Position.(int))),
+				})
+				return nil
+			} else {
+				e.UpdateInteractionResponse(discord.MessageUpdate{
+					Content: omit.Ptr(fmt.Sprintf("%s isn't found on the %s scoreboard", user.Mention(), game)),
+				})
+				return err
+			}
+		}
+
+		if game == "Global" {
+			return generateGlobalLeaderboard(b, e)
+		} else {
+			return generateGameLeaderboard(b, e, game)
+		}
+	}
+}
+
+func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	scores, err := b.DB.Queries.ShowScoreboardForGame(ctx, game)
+	if err != nil {
+		return err
+	}
+
+	var layouts [][]discord.LayoutComponent
+	totalPage := len(scores)/10 + 1
+
+	for i := 1; i <= totalPage; i++ {
+		buf := new(bytes.Buffer)
+		table := tablewriter.NewTable(buf,
+			tablewriter.WithRenderer(renderer.NewMarkdown()),
+			tablewriter.WithRendition(tw.Rendition{
+				Borders: tw.Border{
+					Left:  tw.Off,
+					Right: tw.Off,
+				},
+			}),
+			tablewriter.WithAlignment(tw.Alignment{tw.AlignCenter}),
+		)
+		table.Header([]string{"Rank", "Name", "Score"})
+		offset := (i - 1) * 10
+		for _, score := range scores[offset:] {
+			// Check if member exists in guild
+			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err != nil {
+				name := truncate(member.EffectiveName())
+				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+			} else {
+				// If not, fetch user info
+				if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
+					name := truncate(user.EffectiveName())
+					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				} else {
+					// Fallback to unknown user
+					name := "Unknown User"
+					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				}
+			}
+		}
+		layout := []discord.LayoutComponent{
+			discord.TextDisplayComponent{
+				Content: fmt.Sprintf("%s Prediction Leaderboard", game),
+			},
+			discord.SeparatorComponent{},
+			discord.ContainerComponent{
+				Components: []discord.ContainerSubComponent{
+					discord.TextDisplayComponent{
+						Content: buf.String(),
+					},
+				},
+			},
+		}
+		layouts = append(layouts, layout)
+	}
+
+	_, err = e.UpdateInteractionResponse(discord.MessageUpdate{
+		Components: omit.Ptr(layouts[0]),
+		Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+	})
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		ch, cls := bot.NewEventCollector(e.Client(),
+			func(c *events.ComponentInteractionCreate) bool {
+				return c.Data.CustomID() == "next_show" || c.Data.CustomID() == "prev_show"
+			},
+		)
+		defer cls()
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		defer cancel()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case c := <-ch:
+
+			}
+		}
+	}()
+
+	return fmt.Errorf("Todo")
+}
+
+func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
+	return fmt.Errorf("Todo")
+}
+
+func truncate(name string) string {
+	if len(name) > 12 {
+		return fmt.Sprintf("%s...", name[:9])
+	}
+	return name
+}
