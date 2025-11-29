@@ -146,10 +146,7 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		)
 		table.Header([]string{"Rank", "Name", "Score"})
 		offset := (i - 1) * 10
-		end := offset + 10
-		if end > len(scores) {
-			end = len(scores)
-		}
+		end := min(offset+10, len(scores))
 		for _, score := range scores[offset:end] {
 			// Check if member exists in guild
 			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
