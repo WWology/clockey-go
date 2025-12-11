@@ -9,6 +9,10 @@
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"configureZshAsDefaultShell": true
 		},
+		"ghcr.io/devcontainers-extra/features/zsh-plugins:0": {
+			"plugins": "zsh-autosuggestions zsh-syntax-highlighting",
+			"omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions.git https://github.com/zsh-users/zsh-syntax-highlighting.git"
+		},
 		"ghcr.io/devcontainers/features/git:1": {},
 		"ghcr.io/warrenbuckley/codespace-features/sqlite:1": {},
 		"ghcr.io/devcontainers/features/sshd:1": {}
