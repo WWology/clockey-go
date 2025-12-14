@@ -51,6 +51,7 @@ var BestOf = discord.SlashCommandCreate{
 
 func BestOfCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
+		e.DeferCreateMessage(false)
 		game := data.String("game")
 		seriesLength := data.Int("series_length")
 
