@@ -52,8 +52,8 @@ func (b *Bot) SetupBot(listeners ...bot.EventListener) error {
 	return nil
 }
 
-func (b *Bot) OnReady(_ *events.Ready) {
-	slog.Info("Clockey ready")
+func (b *Bot) OnReady(e *events.Ready) {
+	slog.Info("Logged in", slog.String("user", e.User.Username))
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := b.Client.SetPresence(ctx, gateway.WithListeningActivity("you"), gateway.WithOnlineStatus(discord.OnlineStatusOnline)); err != nil {
