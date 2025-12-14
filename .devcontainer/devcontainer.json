@@ -6,8 +6,8 @@
             "configureZshAsDefaultShell": true
         },
         "ghcr.io/devcontainers-extra/features/zsh-plugins:0": {
-            "plugins": "zsh-autosuggestions zsh-syntax-highlighting",
-            "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions.git https://github.com/zsh-users/zsh-syntax-highlighting.git"
+            "plugins": "zsh-autosuggestions zsh-syntax-highlighting zsh-autocomplete",
+            "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions.git https://github.com/zsh-users/zsh-syntax-highlighting.git https://github.com/marlonrichert/zsh-autocomplete.git"
         },
         "ghcr.io/devcontainers/features/git:1": {},
         "ghcr.io/warrenbuckley/codespace-features/sqlite:1": {},
@@ -15,7 +15,10 @@
     },
     "customizations": {
         "vscode": {
-            "extensions": ["eamodio.gitlens", "tamasfe.even-better-toml"]
+            "extensions": [
+                "eamodio.gitlens",
+                "tamasfe.even-better-toml"
+            ]
         }
     }
 }
