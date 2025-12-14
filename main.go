@@ -46,7 +46,6 @@ func main() {
 
 	setupLogger(cfg.Log)
 	slog.Info("Starting Clockey...", slog.String("version", Version), slog.String("commit", Commit))
-	slog.Info("Syncing commands", slog.Bool("sync", *shouldSyncCommands))
 
 	b := app.New(*cfg, Version, Commit, app.Database{
 		Queries: sqlc.New(db),
@@ -64,6 +63,8 @@ func main() {
 	// Predictions
 	h.SlashCommand("/bo", predictions.BestOfCommandHandler())
 	h.SlashCommand("/deletebo", predictions.DeleteBestOfCommandHandler())
+	h.Autocomplete("/bo", predictions.BestOfAutocompleteHandler())
+	h.Autocomplete("/deletebo", predictions.BestOfAutocompleteHandler())
 	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 	// Other
 	h.SlashCommand("/next", commands.NextCommandHandler())
@@ -80,7 +81,8 @@ func main() {
 	}()
 
 	if *shouldSyncCommands {
-		slog.Info("Syncing commands", slog.Any("guild_ids", cfg.Bot.DevGuilds))
+		slog.Info("Syncing commands", slog.Bool("sync", *shouldSyncCommands))
+		slog.Info("Syncing commands", slog.Int("commands", len(commands.Commands)), slog.Any("guild_ids", cfg.Bot.DevGuilds))
 		if err = handler.SyncCommands(b.Client, commands.Commands, cfg.Bot.DevGuilds); err != nil {
 			slog.Error("Failed to sync commands", slog.Any("err", err))
 		}

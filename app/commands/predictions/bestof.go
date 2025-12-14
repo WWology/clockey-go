@@ -6,6 +6,7 @@ import (
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/omit"
 )
 
 var BestOf = discord.SlashCommandCreate{
@@ -13,31 +14,10 @@ var BestOf = discord.SlashCommandCreate{
 	Description: "Create prediction roles for selected game",
 	Options: []discord.ApplicationCommandOption{
 		discord.ApplicationCommandOptionString{
-			Name:        "game",
-			Description: "The game to create prediction roles for",
-			Required:    true,
-			Choices: []discord.ApplicationCommandOptionChoiceString{
-				{
-					Name:  "Dota",
-					Value: "Dota",
-				},
-				{
-					Name:  "CS",
-					Value: "CS",
-				},
-				{
-					Name:  "MLBB",
-					Value: "MLBB",
-				},
-				{
-					Name:  "HoK",
-					Value: "HoK",
-				},
-				{
-					Name:  "Extra",
-					Value: "EX",
-				},
-			},
+			Name:         "game",
+			Description:  "The game to create prediction roles for",
+			Required:     true,
+			Autocomplete: true,
 		},
 		discord.ApplicationCommandOptionInt{
 			Name:        "series_length",
@@ -140,9 +120,12 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 		}
 
-		return e.CreateMessage(discord.MessageCreate{
-			Content: "Prediction roles created for " + game + " best of " + fmt.Sprint(seriesLength),
-		})
+		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
+			Content: omit.Ptr("Prediction roles created for " + game + " best of " + fmt.Sprint(seriesLength)),
+		}); err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
@@ -151,31 +134,10 @@ var DeleteBestOf = discord.SlashCommandCreate{
 	Description: "Delete all prediction roles for selected game",
 	Options: []discord.ApplicationCommandOption{
 		discord.ApplicationCommandOptionString{
-			Name:        "game",
-			Description: "The game to delete prediction roles for",
-			Required:    true,
-			Choices: []discord.ApplicationCommandOptionChoiceString{
-				{
-					Name:  "Dota",
-					Value: "Dota",
-				},
-				{
-					Name:  "CS",
-					Value: "CS",
-				},
-				{
-					Name:  "MLBB",
-					Value: "MLBB",
-				},
-				{
-					Name:  "HoK",
-					Value: "HoK",
-				},
-				{
-					Name:  "Extra",
-					Value: "EX",
-				},
-			},
+			Name:         "game",
+			Description:  "The game to delete prediction roles for",
+			Required:     true,
+			Autocomplete: true,
 		},
 		discord.ApplicationCommandOptionInt{
 			Name:        "series_length",
@@ -209,6 +171,7 @@ var DeleteBestOf = discord.SlashCommandCreate{
 
 func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
+		e.DeferCreateMessage(false)
 		game := data.String("game")
 		seriesLength := data.Int("series_length")
 		switch seriesLength {
@@ -296,9 +259,46 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 				return err
 			}
 		}
-		return e.CreateMessage(discord.MessageCreate{
-			Content: "Prediction roles deleted for " + game + " best of " + fmt.Sprint(seriesLength),
-		})
+		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
+			Content: omit.Ptr("Prediction roles deleted for " + game + " best of " + fmt.Sprint(seriesLength)),
+		}); err != nil {
+			return err
+		}
+		return nil
+	}
+}
 
+func BestOfAutocompleteHandler() handler.AutocompleteHandler {
+	return func(e *handler.AutocompleteEvent) error {
+		if len(e.Data.Focused().String()) > 0 {
+			return e.AutocompleteResult([]discord.AutocompleteChoice{
+				discord.AutocompleteChoiceString{
+					Name:  "Dota",
+					Value: "Dota",
+				},
+				discord.AutocompleteChoiceString{
+					Name:  "CS",
+					Value: "CS",
+				},
+				discord.AutocompleteChoiceString{
+					Name:  "MLBB",
+					Value: "MLBB",
+				},
+				discord.AutocompleteChoiceString{
+					Name:  "HoK",
+					Value: "HoK",
+				},
+				discord.AutocompleteChoiceString{
+					Name:  "Extra",
+					Value: "EX",
+				},
+				discord.AutocompleteChoiceString{
+					Name:  e.Data.Focused().String(),
+					Value: e.Data.Focused().String(),
+				},
+			})
+		} else {
+			return e.AutocompleteResult([]discord.AutocompleteChoice{})
+		}
 	}
 }
