@@ -72,7 +72,7 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			defer cancel()
 			if res, err := b.DB.Queries.GetMemberGlobalScore(ctx, int64(user.ID)); err == nil {
 				e.UpdateInteractionResponse(discord.MessageUpdate{
-					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %.0f, ranked at %d", user.Mention(), res.Score, res.Position)),
+					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %d, ranked at %d", user.Mention(), res.Score, res.Position)),
 				})
 				return nil
 			} else if err == sql.ErrNoRows {
@@ -129,6 +129,8 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		return err
 	}
 
+	// scores := test.GetTestScoreboardForGame()
+
 	var layouts [][]discord.LayoutComponent
 	totalPage := len(scores)/10 + 1
 
@@ -147,23 +149,44 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		table.Header([]string{"Rank", "Name", "Score"})
 		offset := (i - 1) * 10
 		end := min(offset+10, len(scores))
+
 		for _, score := range scores[offset:end] {
-			// Check if member exists in guild
+			start := time.Now()
+
+			// Check if member exists in cache
+			if cachedMember, exists := e.Client().Caches.Member(*e.GuildID(), snowflake.ID(score.Member)); exists {
+				name := truncate(cachedMember.EffectiveName())
+				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				elapsedIfCached := time.Since(start)
+				fmt.Printf("Cached member: in %s\n", elapsedIfCached)
+				continue
+			}
+
+			// Make API calls if not in cache
 			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
 				name := truncate(member.EffectiveName())
 				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				elapsedifMemberExists := time.Since(start)
+				fmt.Printf("Member exists: in %s\n", elapsedifMemberExists)
 			} else {
 				// If not, fetch user info
 				if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
 					name := truncate(user.EffectiveName())
 					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					elapsedifUserExists := time.Since(start)
+					fmt.Printf("User exists: in %s\n", elapsedifUserExists)
 				} else {
 					// Fallback to unknown user
 					name := "Unknown User"
 					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					elapsedifUserNotExists := time.Since(start)
+					fmt.Printf("User not exists: in %s\n", elapsedifUserNotExists)
 				}
 			}
+
 		}
+		table.Render()
+
 		layout := []discord.LayoutComponent{
 			discord.TextDisplayComponent{
 				Content: fmt.Sprintf("%s Prediction Leaderboard", game),
@@ -172,7 +195,7 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			discord.ContainerComponent{
 				Components: []discord.ContainerSubComponent{
 					discord.TextDisplayComponent{
-						Content: buf.String(),
+						Content: fmt.Sprint("```\n" + buf.String() + "\n```"),
 					},
 				},
 			},
@@ -192,6 +215,7 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			},
 		}
 		layouts = append(layouts, layout)
+
 	}
 
 	_, err = e.UpdateInteractionResponse(discord.MessageUpdate{
