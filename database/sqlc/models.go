@@ -4,17 +4,111 @@
 
 package sqlc
 
+import (
+	"database/sql/driver"
+	"fmt"
+)
+
+type EventType string
+
+const (
+	EventTypeDota   EventType = "Dota"
+	EventTypeCS     EventType = "CS"
+	EventTypeMLBB   EventType = "MLBB"
+	EventTypeHoK    EventType = "HoK"
+	EventTypeOthers EventType = "Others"
+)
+
+func (e *EventType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EventType(s)
+	case string:
+		*e = EventType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EventType: %T", src)
+	}
+	return nil
+}
+
+type NullEventType struct {
+	EventType EventType
+	Valid     bool // Valid is true if EventType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEventType) Scan(value interface{}) error {
+	if value == nil {
+		ns.EventType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EventType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEventType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EventType), nil
+}
+
+type ScoreboardGame string
+
+const (
+	ScoreboardGameDota ScoreboardGame = "Dota"
+	ScoreboardGameCS   ScoreboardGame = "CS"
+	ScoreboardGameMLBB ScoreboardGame = "MLBB"
+	ScoreboardGameHoK  ScoreboardGame = "HoK"
+)
+
+func (e *ScoreboardGame) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ScoreboardGame(s)
+	case string:
+		*e = ScoreboardGame(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ScoreboardGame: %T", src)
+	}
+	return nil
+}
+
+type NullScoreboardGame struct {
+	ScoreboardGame ScoreboardGame
+	Valid          bool // Valid is true if ScoreboardGame is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullScoreboardGame) Scan(value interface{}) error {
+	if value == nil {
+		ns.ScoreboardGame, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ScoreboardGame.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullScoreboardGame) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ScoreboardGame), nil
+}
+
 type Event struct {
 	ID       int64
 	Name     string
 	Time     int64
-	Type     string
+	Type     EventType
 	Gardener int64
-	Hours    int64
+	Hours    int16
 }
 
 type Scoreboard struct {
 	Member int64
-	Score  int64
-	Game   string
+	Score  int16
+	Game   ScoreboardGame
 }

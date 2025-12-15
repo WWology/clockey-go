@@ -1,16 +1,22 @@
 version: '2'
+cloud:
+  project: '01KCEZM5FN8E06SW6H95D00QS9'
 plugins:
 - name: golang
   wasm:
     url: https://downloads.sqlc.dev/plugin/sqlc-gen-go_1.5.0.wasm
     sha256: 4ca52949f4dc04b55188439f5de0ae20af2a71e3534b87907f2a7f466bda59ec
+servers:
+  - engine: postgresql
+    uri: ${DATABASE_URI}
 sql:
 - schema: ./database/schemas
   queries: ./database/queries
-  engine: sqlite
+  engine: postgresql
   codegen:
   - plugin: golang
     out: ./database/sqlc
     options:
       package: sqlc
+      sql_package: pgx/v5
 

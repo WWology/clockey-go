@@ -10,19 +10,19 @@ import (
 )
 
 const createEvent = `-- name: CreateEvent :exec
-INSERT INTO events (name, time, type, gardener, hours) VALUES (?, ?, ?, ?, ?)
+INSERT INTO events (name, time, type, gardener, hours) VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateEventParams struct {
 	Name     string
 	Time     int64
-	Type     string
+	Type     EventType
 	Gardener int64
-	Hours    int64
+	Hours    int16
 }
 
 func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) error {
-	_, err := q.db.ExecContext(ctx, createEvent,
+	_, err := q.db.Exec(ctx, createEvent,
 		arg.Name,
 		arg.Time,
 		arg.Type,
@@ -34,18 +34,18 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) error 
 
 const deleteEvent = `-- name: DeleteEvent :exec
 DELETE FROM events
-WHERE name = ? AND time = ? AND type = ? AND hours = ?
+WHERE name = $1 AND time = $2 AND type = $3 AND hours = $4
 `
 
 type DeleteEventParams struct {
 	Name  string
 	Time  int64
-	Type  string
-	Hours int64
+	Type  EventType
+	Hours int16
 }
 
 func (q *Queries) DeleteEvent(ctx context.Context, arg DeleteEventParams) error {
-	_, err := q.db.ExecContext(ctx, deleteEvent,
+	_, err := q.db.Exec(ctx, deleteEvent,
 		arg.Name,
 		arg.Time,
 		arg.Type,
@@ -59,18 +59,18 @@ SELECT
     id, name, time, type, gardener, hours
 FROM
     events
-WHERE time BETWEEN ? AND ?
-AND type = ?
+WHERE time BETWEEN $1 AND $2
+AND type = $3
 `
 
 type GetEventsForGameParams struct {
-	Start int64
-	End   int64
-	Type  string
+	Time   int64
+	Time_2 int64
+	Type   EventType
 }
 
 func (q *Queries) GetEventsForGame(ctx context.Context, arg GetEventsForGameParams) ([]Event, error) {
-	rows, err := q.db.QueryContext(ctx, getEventsForGame, arg.Start, arg.End, arg.Type)
+	rows, err := q.db.Query(ctx, getEventsForGame, arg.Time, arg.Time_2, arg.Type)
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +89,6 @@ func (q *Queries) GetEventsForGame(ctx context.Context, arg GetEventsForGamePara
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -104,18 +101,18 @@ SELECT
     id, name, time, type, gardener, hours
 FROM
     events
-WHERE time BETWEEN ? AND ?
-AND gardener = ?
+WHERE time BETWEEN $1 AND $2
+AND gardener = $3
 `
 
 type GetEventsForGardenerParams struct {
-	Start    int64
-	End      int64
+	Time     int64
+	Time_2   int64
 	Gardener int64
 }
 
 func (q *Queries) GetEventsForGardener(ctx context.Context, arg GetEventsForGardenerParams) ([]Event, error) {
-	rows, err := q.db.QueryContext(ctx, getEventsForGardener, arg.Start, arg.End, arg.Gardener)
+	rows, err := q.db.Query(ctx, getEventsForGardener, arg.Time, arg.Time_2, arg.Gardener)
 	if err != nil {
 		return nil, err
 	}
@@ -134,9 +131,6 @@ func (q *Queries) GetEventsForGardener(ctx context.Context, arg GetEventsForGard
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

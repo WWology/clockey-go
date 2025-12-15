@@ -23,17 +23,23 @@ func LoadConfig(path string) (*Config, error) {
 }
 
 type Config struct {
-	Log LogConfig `toml:"log"`
-	Bot BotConfig `toml:"bot"`
+	Log      LogConfig      `toml:"log"`
+	Bot      BotConfig      `toml:"bot"`
+	Database DatabaseConfig `toml:"database"`
 }
 
 type BotConfig struct {
 	DevGuilds []snowflake.ID `toml:"dev_guilds"`
 	Token     string         `toml:"token"`
+	SqlcToken string         `toml:"sqlc_token"`
 }
 
 type LogConfig struct {
 	Level     slog.Level `toml:"level"`
 	Format    string     `toml:"format"`
 	AddSource bool       `toml:"add_source"`
+}
+
+type DatabaseConfig struct {
+	ConnectionString string `toml:"connection_string"`
 }

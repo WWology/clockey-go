@@ -7,22 +7,21 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 )
 
 const clearScoreboardForGame = `-- name: ClearScoreboardForGame :execrows
 DELETE FROM
     scoreboards
 WHERE
-    game = ?
+    game = $1
 `
 
-func (q *Queries) ClearScoreboardForGame(ctx context.Context, game string) (int64, error) {
-	result, err := q.db.ExecContext(ctx, clearScoreboardForGame, game)
+func (q *Queries) ClearScoreboardForGame(ctx context.Context, game ScoreboardGame) (int64, error) {
+	result, err := q.db.Exec(ctx, clearScoreboardForGame, game)
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected()
+	return result.RowsAffected(), nil
 }
 
 const getMemberGlobalScore = `-- name: GetMemberGlobalScore :one
@@ -35,16 +34,16 @@ SELECT
 FROM
     scoreboards
 WHERE
-    member = ?
+    member = $1
 `
 
 type GetMemberGlobalScoreRow struct {
-	Position interface{}
-	Score    sql.NullFloat64
+	Position int64
+	Score    int64
 }
 
 func (q *Queries) GetMemberGlobalScore(ctx context.Context, member int64) (GetMemberGlobalScoreRow, error) {
-	row := q.db.QueryRowContext(ctx, getMemberGlobalScore, member)
+	row := q.db.QueryRow(ctx, getMemberGlobalScore, member)
 	var i GetMemberGlobalScoreRow
 	err := row.Scan(&i.Position, &i.Score)
 	return i, err
@@ -63,24 +62,24 @@ FROM (
     FROM
         scoreboards
     WHERE
-        game = ?
+        game = $1
 )
 WHERE
-    member = ?
+    member = $2
 `
 
 type GetMemberScoreForGameParams struct {
-	Game   string
+	Game   ScoreboardGame
 	Member int64
 }
 
 type GetMemberScoreForGameRow struct {
-	Position interface{}
-	Score    int64
+	Position int64
+	Score    int16
 }
 
 func (q *Queries) GetMemberScoreForGame(ctx context.Context, arg GetMemberScoreForGameParams) (GetMemberScoreForGameRow, error) {
-	row := q.db.QueryRowContext(ctx, getMemberScoreForGame, arg.Game, arg.Member)
+	row := q.db.QueryRow(ctx, getMemberScoreForGame, arg.Game, arg.Member)
 	var i GetMemberScoreForGameRow
 	err := row.Scan(&i.Position, &i.Score)
 	return i, err
@@ -100,20 +99,20 @@ FROM (
     FROM
         scoreboards
     WHERE
-        game = ?
+        game = $1
 )
 WHERE
     position = 1
 `
 
 type GetWinnerForGameRow struct {
-	Position interface{}
+	Position int64
 	Member   int64
-	Score    int64
+	Score    int16
 }
 
-func (q *Queries) GetWinnerForGame(ctx context.Context, game string) ([]GetWinnerForGameRow, error) {
-	rows, err := q.db.QueryContext(ctx, getWinnerForGame, game)
+func (q *Queries) GetWinnerForGame(ctx context.Context, game ScoreboardGame) ([]GetWinnerForGameRow, error) {
+	rows, err := q.db.Query(ctx, getWinnerForGame, game)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +124,6 @@ func (q *Queries) GetWinnerForGame(ctx context.Context, game string) ([]GetWinne
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -150,13 +146,13 @@ GROUP BY
 `
 
 type ShowGlobalScoreboardRow struct {
-	Position interface{}
+	Position int64
 	Member   int64
-	Score    sql.NullFloat64
+	Score    int64
 }
 
 func (q *Queries) ShowGlobalScoreboard(ctx context.Context) ([]ShowGlobalScoreboardRow, error) {
-	rows, err := q.db.QueryContext(ctx, showGlobalScoreboard)
+	rows, err := q.db.Query(ctx, showGlobalScoreboard)
 	if err != nil {
 		return nil, err
 	}
@@ -168,9 +164,6 @@ func (q *Queries) ShowGlobalScoreboard(ctx context.Context) ([]ShowGlobalScorebo
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -189,17 +182,17 @@ SELECT
 FROM
     scoreboards
 WHERE
-    game = ?
+    game = $1
 `
 
 type ShowScoreboardForGameRow struct {
-	Position interface{}
+	Position int64
 	Member   int64
-	Score    int64
+	Score    int16
 }
 
-func (q *Queries) ShowScoreboardForGame(ctx context.Context, game string) ([]ShowScoreboardForGameRow, error) {
-	rows, err := q.db.QueryContext(ctx, showScoreboardForGame, game)
+func (q *Queries) ShowScoreboardForGame(ctx context.Context, game ScoreboardGame) ([]ShowScoreboardForGameRow, error) {
+	rows, err := q.db.Query(ctx, showScoreboardForGame, game)
 	if err != nil {
 		return nil, err
 	}
@@ -212,9 +205,6 @@ func (q *Queries) ShowScoreboardForGame(ctx context.Context, game string) ([]Sho
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -225,7 +215,7 @@ const updateScoreboardForGame = `-- name: UpdateScoreboardForGame :execrows
 INSERT INTO
     scoreboards (member, score, game)
 VALUES
-    (?, ?, ?) ON CONFLICT (member) DO
+    ($1, $2, $3) ON CONFLICT (member) DO
 UPDATE
 SET
     score = score + 1
@@ -233,14 +223,14 @@ SET
 
 type UpdateScoreboardForGameParams struct {
 	Member int64
-	Score  int64
-	Game   string
+	Score  int16
+	Game   ScoreboardGame
 }
 
 func (q *Queries) UpdateScoreboardForGame(ctx context.Context, arg UpdateScoreboardForGameParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateScoreboardForGame, arg.Member, arg.Score, arg.Game)
+	result, err := q.db.Exec(ctx, updateScoreboardForGame, arg.Member, arg.Score, arg.Game)
 	if err != nil {
 		return 0, err
 	}
-	return result.RowsAffected()
+	return result.RowsAffected(), nil
 }

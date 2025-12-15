@@ -18,7 +18,7 @@ import (
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
-	_ "modernc.org/sqlite"
+	"github.com/jackc/pgx/v5"
 )
 
 var (
@@ -37,19 +37,15 @@ func main() {
 		os.Exit(-1)
 	}
 
-	db, err := sql.Open("sqlite", "database/clockey.db")
-	if err != nil {
-		slog.Error("Failed to open database", slog.Any("err", err))
-		os.Exit(-1)
-	}
-	defer db.Close()
+	conn, err := pgx.Connect(context.Background(), cfg.Database.ConnectionString)
+	defer conn.Close(context.Background())
 
 	setupLogger(cfg.Log)
 	slog.Info("Starting Clockey...", slog.String("version", Version), slog.String("commit", Commit))
 
 	b := app.New(*cfg, Version, Commit, app.Database{
-		Queries: sqlc.New(db),
-		Conn:    db,
+		Queries: sqlc.New(conn),
+		Conn:    conn,
 	})
 
 	h := handler.New()

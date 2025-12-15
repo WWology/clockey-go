@@ -2,7 +2,7 @@
 INSERT INTO
     scoreboards (member, score, game)
 VALUES
-    (?, ?, ?) ON CONFLICT (member) DO
+    ($1, $2, $3) ON CONFLICT (member) DO
 UPDATE
 SET
     score = score + 1;
@@ -18,13 +18,13 @@ SELECT
 FROM
     scoreboards
 WHERE
-    game = ?;
+    game = $1;
 
 -- name: ClearScoreboardForGame :execrows
 DELETE FROM
     scoreboards
 WHERE
-    game = ?;
+    game = $1;
 
 -- name: GetWinnerForGame :many
 SELECT
@@ -40,7 +40,7 @@ FROM (
     FROM
         scoreboards
     WHERE
-        game = ?
+        game = $1
 )
 WHERE
     position = 1;
@@ -58,10 +58,10 @@ FROM (
     FROM
         scoreboards
     WHERE
-        game = ?
+        game = $1
 )
 WHERE
-    member = ?;
+    member = $2;
 
 -- name: ShowGlobalScoreboard :many
 SELECT
@@ -86,4 +86,4 @@ SELECT
 FROM
     scoreboards
 WHERE
-    member = ?;
+    member = $1;

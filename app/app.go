@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"database/sql"
 	"log/slog"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
+	"github.com/jackc/pgx/v5"
 )
 
 func New(cfg Config, version string, commit string, db Database) *Bot {
@@ -27,7 +27,7 @@ func New(cfg Config, version string, commit string, db Database) *Bot {
 
 type Database struct {
 	Queries *sqlc.Queries
-	Conn    *sql.DB
+	Conn    *pgx.Conn
 }
 
 type Bot struct {
