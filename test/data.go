@@ -1,5 +1,3 @@
-//go:build ignore
-
 package test
 
 import "clockey/database/sqlc"
@@ -153,4 +151,70 @@ func GetTestEventsForGardener(id int64) []sqlc.Event {
 
 func GetTestEventsForGame(game string) []sqlc.Event {
 	return TestEventsForGame[game]
+}
+
+var TestScoreboardForGame = []sqlc.ShowScoreboardForGameRow{
+	{Position: 1, Member: 473416224903004160, Score: 4},
+	{Position: 1, Member: 754724309276164159, Score: 4},
+	{Position: 1, Member: 1051400154856562718, Score: 4},
+	{Position: 2, Member: 115541429773664260, Score: 3},
+	{Position: 2, Member: 172360818715918337, Score: 3},
+	{Position: 2, Member: 210797468252766229, Score: 3},
+	{Position: 2, Member: 263271031135797248, Score: 3},
+	{Position: 2, Member: 517924697120440342, Score: 3},
+	{Position: 2, Member: 538206137401737263, Score: 3},
+	{Position: 2, Member: 563519209775038470, Score: 3},
+	{Position: 2, Member: 690958028794626128, Score: 3},
+	{Position: 2, Member: 726035498967236630, Score: 3},
+	{Position: 3, Member: 108222624173133824, Score: 2},
+	{Position: 3, Member: 150907655622361088, Score: 2},
+	{Position: 3, Member: 165146318954692608, Score: 2},
+	{Position: 3, Member: 175161938962022400, Score: 2},
+	{Position: 3, Member: 175654113089028097, Score: 2},
+	{Position: 3, Member: 181258216955445248, Score: 2},
+	{Position: 3, Member: 194916512010731520, Score: 2},
+	{Position: 3, Member: 248388919274504193, Score: 2},
+	{Position: 3, Member: 293360731867316225, Score: 2},
+	{Position: 3, Member: 327100335200010240, Score: 2},
+	{Position: 3, Member: 332438787588227072, Score: 2},
+	{Position: 3, Member: 389454049528774662, Score: 2},
+	{Position: 3, Member: 410440411275067393, Score: 2},
+	{Position: 3, Member: 465488991341510657, Score: 2},
+	{Position: 3, Member: 491792271188951050, Score: 2},
+	{Position: 3, Member: 613662314520117268, Score: 2},
+	{Position: 3, Member: 731812286804787271, Score: 2},
+	{Position: 3, Member: 757988269442072726, Score: 2},
+	{Position: 3, Member: 765805848768544768, Score: 2},
+	{Position: 4, Member: 86392579855253504, Score: 1},
+	{Position: 4, Member: 123174864646307840, Score: 1},
+	{Position: 4, Member: 133058282314137600, Score: 1},
+	{Position: 4, Member: 212709365965258754, Score: 1},
+	{Position: 4, Member: 217566701095616512, Score: 1},
+	{Position: 4, Member: 233992899182854144, Score: 1},
+	{Position: 4, Member: 245699875763781634, Score: 1},
+	{Position: 4, Member: 260090733741080578, Score: 1},
+	{Position: 4, Member: 269547821856849922, Score: 1},
+	{Position: 4, Member: 271325075909640202, Score: 1},
+	{Position: 4, Member: 337601618495275008, Score: 1},
+	{Position: 4, Member: 359906503534051330, Score: 1},
+	{Position: 4, Member: 363545910443245569, Score: 1},
+	{Position: 4, Member: 368726378297950209, Score: 1},
+	{Position: 4, Member: 377156257318174720, Score: 1},
+	{Position: 4, Member: 384372937282551809, Score: 1},
+	{Position: 4, Member: 386319187414614018, Score: 1},
+	{Position: 4, Member: 479711565222772756, Score: 1},
+	{Position: 4, Member: 498402290168889344, Score: 1},
+	{Position: 4, Member: 528306061413711883, Score: 1},
+	{Position: 4, Member: 551399725878738965, Score: 1},
+	{Position: 4, Member: 639776039278477314, Score: 1},
+	{Position: 4, Member: 702962467059269802, Score: 1},
+	{Position: 4, Member: 703627141916524665, Score: 1},
+	{Position: 4, Member: 837814287577382932, Score: 1},
+	{Position: 4, Member: 913279315007901716, Score: 1},
+	{Position: 4, Member: 917815237749653546, Score: 1},
+	{Position: 4, Member: 1254815477599961149, Score: 1},
+}
+
+func GetTestScoreboardForGame() []sqlc.ShowScoreboardForGameRow {
+	return TestScoreboardForGame
 }
