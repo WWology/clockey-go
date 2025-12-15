@@ -129,8 +129,6 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		return err
 	}
 
-	// scores := test.GetTestScoreboardForGame()
-
 	var layouts [][]discord.LayoutComponent
 	totalPage := len(scores)/10 + 1
 
@@ -151,39 +149,27 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 		end := min(offset+10, len(scores))
 
 		for _, score := range scores[offset:end] {
-			start := time.Now()
-
 			// Check if member exists in cache
 			if cachedMember, exists := e.Client().Caches.Member(*e.GuildID(), snowflake.ID(score.Member)); exists {
 				name := truncate(cachedMember.EffectiveName())
 				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
-				elapsedIfCached := time.Since(start)
-				fmt.Printf("Cached member: in %s\n", elapsedIfCached)
-				continue
-			}
-
-			// Make API calls if not in cache
-			if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
-				name := truncate(member.EffectiveName())
-				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
-				elapsedifMemberExists := time.Since(start)
-				fmt.Printf("Member exists: in %s\n", elapsedifMemberExists)
 			} else {
-				// If not, fetch user info
-				if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
-					name := truncate(user.EffectiveName())
+				// Make API calls if not in cache
+				if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
+					name := truncate(member.EffectiveName())
 					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
-					elapsedifUserExists := time.Since(start)
-					fmt.Printf("User exists: in %s\n", elapsedifUserExists)
 				} else {
-					// Fallback to unknown user
-					name := "Unknown User"
-					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
-					elapsedifUserNotExists := time.Since(start)
-					fmt.Printf("User not exists: in %s\n", elapsedifUserNotExists)
+					// If not, fetch user info
+					if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
+						name := truncate(user.EffectiveName())
+						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					} else {
+						// Fallback to unknown user
+						name := "Unknown User"
+						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					}
 				}
 			}
-
 		}
 		table.Render()
 
@@ -266,6 +252,132 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 }
 
 func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	scores, err := b.DB.Queries.ShowGlobalScoreboard(ctx)
+	if err != nil {
+		return err
+	}
+
+	var layouts [][]discord.LayoutComponent
+	totalPage := len(scores)/10 + 1
+
+	for i := 1; i <= totalPage; i++ {
+		buf := new(bytes.Buffer)
+		table := tablewriter.NewTable(buf,
+			tablewriter.WithRenderer(renderer.NewMarkdown()),
+			tablewriter.WithRendition(tw.Rendition{
+				Borders: tw.Border{
+					Left:  tw.Off,
+					Right: tw.Off,
+				},
+			}),
+			tablewriter.WithAlignment(tw.Alignment{tw.AlignCenter}),
+		)
+		table.Header([]string{"Rank", "Name", "Score"})
+		offset := (i - 1) * 10
+		end := min(offset+10, len(scores))
+
+		for _, score := range scores[offset:end] {
+			// Check if member exists in cache
+			if cachedMember, exists := e.Client().Caches.Member(*e.GuildID(), snowflake.ID(score.Member)); exists {
+				name := truncate(cachedMember.EffectiveName())
+				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+			} else {
+				// Make API calls if not in cache
+				if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
+					name := truncate(member.EffectiveName())
+					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				} else {
+					// If not, fetch user info
+					if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
+						name := truncate(user.EffectiveName())
+						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					} else {
+						// Fallback to unknown user
+						name := "Unknown User"
+						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					}
+				}
+			}
+		}
+		table.Render()
+
+		layout := []discord.LayoutComponent{
+			discord.TextDisplayComponent{
+				Content: "Global Prediction Leaderboard",
+			},
+			discord.SeparatorComponent{},
+			discord.ContainerComponent{
+				Components: []discord.ContainerSubComponent{
+					discord.TextDisplayComponent{
+						Content: fmt.Sprint("```\n" + buf.String() + "\n```"),
+					},
+				},
+			},
+			discord.ActionRowComponent{
+				Components: []discord.InteractiveComponent{
+					discord.ButtonComponent{
+						Style:    discord.ButtonStyleSecondary,
+						Label:    "⏮️",
+						CustomID: "prev_show",
+					},
+					discord.ButtonComponent{
+						Style:    discord.ButtonStyleSecondary,
+						Label:    "⏭️",
+						CustomID: "next_show",
+					},
+				},
+			},
+		}
+		layouts = append(layouts, layout)
+
+	}
+
+	_, err = e.UpdateInteractionResponse(discord.MessageUpdate{
+		Components: omit.Ptr(layouts[0]),
+		Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+	})
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		ch, cls := bot.NewEventCollector(e.Client(),
+			func(c *events.ComponentInteractionCreate) bool {
+				return c.Data.CustomID() == "next_show" || c.Data.CustomID() == "prev_show"
+			},
+		)
+		defer cls()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		defer cancel()
+		currentPage := 0
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case c := <-ch:
+				if c.Data.CustomID() == "next_show" {
+					currentPage++
+					if currentPage >= totalPage {
+						currentPage = 0
+					}
+				} else if c.Data.CustomID() == "prev_show" {
+					currentPage--
+					if currentPage < 0 {
+						currentPage = totalPage - 1
+					}
+				}
+				c.UpdateMessage(discord.MessageUpdate{
+					Components: omit.Ptr(layouts[currentPage]),
+					Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+				})
+			default:
+				continue
+			}
+		}
+	}()
+
 	return fmt.Errorf("Todo")
 }
 
