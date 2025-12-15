@@ -72,7 +72,7 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			defer cancel()
 			if res, err := b.DB.Queries.GetMemberGlobalScore(ctx, int64(user.ID)); err == nil {
 				e.UpdateInteractionResponse(discord.MessageUpdate{
-					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %.0f, ranked at %d", user.Mention(), res.Score.Float64, res.Position.(int))),
+					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %.0f, ranked at %d", user.Mention(), res.Score, res.Position)),
 				})
 				return nil
 			} else if err == sql.ErrNoRows {
@@ -92,11 +92,11 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			if res, err := b.DB.Queries.GetMemberScoreForGame(ctx, sqlc.GetMemberScoreForGameParams{
-				Game:   game,
+				Game:   sqlc.ScoreboardGame(game),
 				Member: int64(user.ID),
 			}); err == nil {
 				e.UpdateInteractionResponse(discord.MessageUpdate{
-					Content: omit.Ptr(fmt.Sprintf("The %s prediction score for %s is %d, ranked at %d", game, user.Mention(), res.Score, res.Position.(int))),
+					Content: omit.Ptr(fmt.Sprintf("The %s prediction score for %s is %d, ranked at %d", game, user.Mention(), res.Score, res.Position)),
 				})
 				return nil
 			} else if err == sql.ErrNoRows {
@@ -124,7 +124,7 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	scores, err := b.DB.Queries.ShowScoreboardForGame(ctx, game)
+	scores, err := b.DB.Queries.ShowScoreboardForGame(ctx, sqlc.ScoreboardGame(game))
 	if err != nil {
 		return err
 	}
