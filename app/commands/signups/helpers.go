@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/snowflake/v2"

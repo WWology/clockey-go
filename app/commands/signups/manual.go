@@ -66,7 +66,14 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 				func(m *events.ModalSubmitInteractionCreate) {
 					// Handle the event details submission
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
-					eventType := m.Data.StringValues("event_type")[0]
+					eventType, err := parseEventType(m.Data.StringValues("event_type")[0])
+					if err != nil {
+						m.Client().Logger.Error("Failed to parse event type", slog.Any("err", err))
+						m.CreateMessage(discord.MessageCreate{
+							Content: "Invalid event type. Please try again.",
+						})
+						return
+					}
 					name := m.Data.Text("event_name")
 					hours, _ := strconv.ParseInt(m.Data.Text("event_duration"), 10, 64)
 					gardener, _ := strconv.ParseInt(m.Data.Text("gardener"), 10, 64)
@@ -83,14 +90,14 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						Type:     eventType,
 						Name:     name,
 						Time:     unixValue,
-						Hours:    hours,
+						Hours:    int16(hours),
 						Gardener: gardener,
 					}); err != nil {
 						m.Client().Logger.Error("Failed to create event in database", slog.Any("err", err))
 						return
 					}
 
-					replyText := "Event: " + eventType + " - " + name + "\n" +
+					replyText := "Event: " + m.Data.StringValues("event_type")[0] + " - " + name + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
 						"Gardener: <@" + data.String("gardener") + ">"
