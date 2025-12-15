@@ -31,7 +31,6 @@ type Config struct {
 type BotConfig struct {
 	DevGuilds []snowflake.ID `toml:"dev_guilds"`
 	Token     string         `toml:"token"`
-	SqlcToken string         `toml:"sqlc_token"`
 }
 
 type LogConfig struct {
@@ -42,4 +41,5 @@ type LogConfig struct {
 
 type DatabaseConfig struct {
 	ConnectionString string `toml:"connection_string"`
+	SqlcToken        string `toml:"sqlc_token"`
 }
