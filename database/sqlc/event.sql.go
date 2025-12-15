@@ -59,18 +59,18 @@ SELECT
     id, name, time, type, gardener, hours
 FROM
     events
-WHERE time BETWEEN $1 AND $2
-AND type = $3
+WHERE time BETWEEN $2 AND $3
+AND type = $1
 `
 
 type GetEventsForGameParams struct {
-	Time   int64
-	Time_2 int64
-	Type   EventType
+	Type      EventType
+	StartTime int64
+	EndTime   int64
 }
 
 func (q *Queries) GetEventsForGame(ctx context.Context, arg GetEventsForGameParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, getEventsForGame, arg.Time, arg.Time_2, arg.Type)
+	rows, err := q.db.Query(ctx, getEventsForGame, arg.Type, arg.StartTime, arg.EndTime)
 	if err != nil {
 		return nil, err
 	}
@@ -101,18 +101,18 @@ SELECT
     id, name, time, type, gardener, hours
 FROM
     events
-WHERE time BETWEEN $1 AND $2
-AND gardener = $3
+WHERE time BETWEEN $2 AND $3
+AND gardener = $1
 `
 
 type GetEventsForGardenerParams struct {
-	Time     int64
-	Time_2   int64
-	Gardener int64
+	Gardener  int64
+	StartTime int64
+	EndTime   int64
 }
 
 func (q *Queries) GetEventsForGardener(ctx context.Context, arg GetEventsForGardenerParams) ([]Event, error) {
-	rows, err := q.db.Query(ctx, getEventsForGardener, arg.Time, arg.Time_2, arg.Gardener)
+	rows, err := q.db.Query(ctx, getEventsForGardener, arg.Gardener, arg.StartTime, arg.EndTime)
 	if err != nil {
 		return nil, err
 	}

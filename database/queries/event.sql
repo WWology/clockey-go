@@ -10,13 +10,13 @@ SELECT
     *
 FROM
     events
-WHERE time BETWEEN $1 AND $2
-AND gardener = $3;
+WHERE time BETWEEN @start_time AND @end_time
+AND gardener = $1;
 
 -- name: GetEventsForGame :many
 SELECT
     *
 FROM
     events
-WHERE time BETWEEN $1 AND $2
-AND type = $3;
+WHERE time BETWEEN @start_time AND @end_time
+AND type = $1;
