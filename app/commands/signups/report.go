@@ -99,9 +99,9 @@ func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time
 	for _, game := range []string{"Dota", "CS", "MLBB", "HoK", "Other"} {
 		wg.Go(func() {
 			if events, err := b.DB.Queries.GetEventsForGame(context.TODO(), sqlc.GetEventsForGameParams{
-				Start: startDate.Unix(),
-				End:   endDate.Unix(),
-				Type:  game,
+				StartTime: startDate.Unix(),
+				EndTime:   endDate.Unix(),
+				Type:      sqlc.EventType(game),
 			}); err == nil {
 				invoices <- GameReportResult{Game: game, Events: events}
 			} else {
@@ -186,9 +186,9 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
 			if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
-				Start:    startDate.Unix(),
-				End:      endDate.Unix(),
-				Gardener: int64(id),
+				StartTime: startDate.Unix(),
+				EndTime:   endDate.Unix(),
+				Gardener:  int64(id),
 			}); err == nil {
 				invoices <- GardenerReportResult{Gardener: name, Events: events}
 			} else {

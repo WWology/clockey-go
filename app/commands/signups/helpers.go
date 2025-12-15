@@ -213,20 +213,3 @@ func parseMessage(msg string) (sqlc.EventType, string, int64, int16, error) {
 	return eventType, name, eventTime, hours, nil
 
 }
-
-func parseEventType(input string) (sqlc.EventType, error) {
-	switch input {
-	case "Dota":
-		return sqlc.EventTypeDota, nil
-	case "CS":
-		return sqlc.EventTypeCS, nil
-	case "MLBB":
-		return sqlc.EventTypeMLBB, nil
-	case "HoK":
-		return sqlc.EventTypeHoK, nil
-	case "Other":
-		return sqlc.EventTypeOthers, nil
-	default:
-		return "", fmt.Errorf("invalid event type: %s", input)
-	}
-}
