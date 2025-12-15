@@ -40,7 +40,7 @@ type Bot struct {
 
 func (b *Bot) SetupBot(listeners ...bot.EventListener) error {
 	client, err := disgo.New(b.Cfg.Bot.Token,
-		bot.WithGatewayConfigOpts(gateway.WithIntents(gateway.IntentGuilds, gateway.IntentGuildMessages, gateway.IntentMessageContent, gateway.IntentGuildMembers)),
+		bot.WithGatewayConfigOpts(gateway.WithIntents(gateway.IntentGuilds, gateway.IntentGuildMessages, gateway.IntentMessageContent, gateway.IntentGuildMembers, gateway.IntentGuildPresences)),
 		bot.WithCacheConfigOpts(cache.WithCaches(cache.FlagGuilds|cache.FlagMembers)),
 		bot.WithEventListeners(listeners...),
 	)
