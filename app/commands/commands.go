@@ -23,4 +23,5 @@ var Commands = []discord.ApplicationCommandCreate{
 
 	// Other
 	Next,
+	Ping,
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"log/slog"
 	"os"
@@ -63,6 +62,7 @@ func main() {
 	h.Autocomplete("/deletebo", predictions.BestOfAutocompleteHandler())
 	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 	// Other
+	h.SlashCommand("/ping", commands.PingCommandHandler())
 	h.SlashCommand("/next", commands.NextCommandHandler())
 
 	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
