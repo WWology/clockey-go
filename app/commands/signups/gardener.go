@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"clockey/app"
@@ -154,57 +152,4 @@ func gardenerSelectMenuBuilder(e *handler.CommandEvent, msg discord.Message) (di
 		Placeholder: "Select the gardener working this event",
 		Options:     gardenerSelectMenuOptions,
 	}, nil
-}
-
-func parseMessage(msg string) (string, string, int64, int64, error) {
-	var eventType string
-	if strings.Contains(msg, "Dota") {
-		eventType = "Dota"
-	} else if strings.Contains(msg, "CS") {
-		eventType = "CS"
-	} else if strings.Contains(msg, "MLBB") {
-		eventType = "MLBB"
-	} else if strings.Contains(msg, "HoK") {
-		eventType = "HoK"
-	} else if strings.Contains(msg, "Other") {
-		eventType = "Other"
-	} else {
-		return "", "", 0, 0, fmt.Errorf("failed to parse event type")
-	}
-
-	var name string
-	nameRegex := regexp.MustCompile(`Event: \w+ - (.+?)(?:\n|$)`)
-	nameMatch := nameRegex.FindStringSubmatch(msg)
-	if len(nameMatch) > 1 {
-		name = nameMatch[1]
-	} else {
-		return "", "", 0, 0, fmt.Errorf("failed to parse event name")
-	}
-
-	var eventTime int64
-	timeRegex := regexp.MustCompile(`<t:([^:]+):F>`)
-	timeMatch := timeRegex.FindStringSubmatch(msg)
-	if len(timeMatch) > 1 {
-		parsedTime, err := strconv.ParseInt(timeMatch[1], 10, 64)
-		if err != nil {
-			return "", "", 0, 0, fmt.Errorf("failed to parse event time")
-		}
-		eventTime = parsedTime
-	} else {
-		return "", "", 0, 0, fmt.Errorf("failed to parse event time")
-	}
-
-	var hours int64
-	hoursRegex := regexp.MustCompile(`Hours: (\d+) hours`)
-	hoursMatch := hoursRegex.FindStringSubmatch(msg)
-	if len(hoursMatch) > 1 {
-		parsedHours, err := strconv.ParseInt(hoursMatch[1], 10, 64)
-		if err != nil {
-			return "", "", 0, 0, fmt.Errorf("failed to parse event hours")
-		}
-		hours = parsedHours
-	}
-
-	return eventType, name, eventTime, hours, nil
-
 }

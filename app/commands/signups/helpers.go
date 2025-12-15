@@ -1,6 +1,8 @@
 package signups
 
 import (
+	"clockey/database/sqlc"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -154,4 +156,74 @@ func processed(msg discord.Message) bool {
 		}
 	}
 	return false
+}
+
+func parseMessage(msg string) (sqlc.EventType, string, int64, int16, error) {
+	var eventType sqlc.EventType
+	if strings.Contains(msg, "Dota") {
+		eventType = sqlc.EventTypeDota
+	} else if strings.Contains(msg, "CS") {
+		eventType = sqlc.EventTypeCS
+	} else if strings.Contains(msg, "MLBB") {
+		eventType = sqlc.EventTypeMLBB
+	} else if strings.Contains(msg, "HoK") {
+		eventType = sqlc.EventTypeHoK
+	} else if strings.Contains(msg, "Other") {
+		eventType = sqlc.EventTypeOthers
+	} else {
+		return "", "", 0, 0, fmt.Errorf("failed to parse event type")
+	}
+
+	var name string
+	nameRegex := regexp.MustCompile(`Event: \w+ - (.+?)(?:\n|$)`)
+	nameMatch := nameRegex.FindStringSubmatch(msg)
+	if len(nameMatch) > 1 {
+		name = nameMatch[1]
+	} else {
+		return "", "", 0, 0, fmt.Errorf("failed to parse event name")
+	}
+
+	var eventTime int64
+	timeRegex := regexp.MustCompile(`<t:([^:]+):F>`)
+	timeMatch := timeRegex.FindStringSubmatch(msg)
+	if len(timeMatch) > 1 {
+		parsedTime, err := strconv.ParseInt(timeMatch[1], 10, 64)
+		if err != nil {
+			return "", "", 0, 0, fmt.Errorf("failed to parse event time")
+		}
+		eventTime = parsedTime
+	} else {
+		return "", "", 0, 0, fmt.Errorf("failed to parse event time")
+	}
+
+	var hours int16
+	hoursRegex := regexp.MustCompile(`Hours: (\d+) hours`)
+	hoursMatch := hoursRegex.FindStringSubmatch(msg)
+	if len(hoursMatch) > 1 {
+		parsedHours, err := strconv.ParseInt(hoursMatch[1], 10, 16)
+		if err != nil {
+			return "", "", 0, 0, fmt.Errorf("failed to parse event hours")
+		}
+		hours = int16(parsedHours)
+	}
+
+	return eventType, name, eventTime, hours, nil
+
+}
+
+func parseEventType(input string) (sqlc.EventType, error) {
+	switch input {
+	case "Dota":
+		return sqlc.EventTypeDota, nil
+	case "CS":
+		return sqlc.EventTypeCS, nil
+	case "MLBB":
+		return sqlc.EventTypeMLBB, nil
+	case "HoK":
+		return sqlc.EventTypeHoK, nil
+	case "Other":
+		return sqlc.EventTypeOthers, nil
+	default:
+		return "", fmt.Errorf("invalid event type: %s", input)
+	}
 }
