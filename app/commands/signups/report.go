@@ -185,7 +185,9 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 	invoices := make(chan GardenerReportResult, 5)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
-			if events, err := b.DB.Queries.GetEventsForGardener(context.TODO(), sqlc.GetEventsForGardenerParams{
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			if events, err := b.DB.Queries.GetEventsForGardener(ctx, sqlc.GetEventsForGardenerParams{
 				StartTime: startDate.Unix(),
 				EndTime:   endDate.Unix(),
 				Gardener:  int64(id),
@@ -208,15 +210,15 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 		for _, event := range invoice.Events {
 			schedule := time.Unix(event.Time, 0).Format("02 Jan 2006")
 			switch event.Type {
-			case "Dota":
+			case sqlc.EventTypeDota:
 				dotaEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
-			case "CS":
+			case sqlc.EventTypeCS:
 				csEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
-			case "MLBB":
+			case sqlc.EventTypeMLBB:
 				mlbbEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
-			case "HoK":
+			case sqlc.EventTypeHoK:
 				hokEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
-			case "Other":
+			case sqlc.EventTypeOthers:
 				otherEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
 			}
 			gardenerHours += int(event.Hours)
