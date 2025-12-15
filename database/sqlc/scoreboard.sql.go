@@ -9,19 +9,13 @@ import (
 	"context"
 )
 
-const clearScoreboardForGame = `-- name: ClearScoreboardForGame :execrows
-DELETE FROM
-    scoreboards
-WHERE
-    game = $1
+const clearScoreboard = `-- name: ClearScoreboard :exec
+TRUNCATE TABLE public.scoreboards
 `
 
-func (q *Queries) ClearScoreboardForGame(ctx context.Context, game ScoreboardGame) (int64, error) {
-	result, err := q.db.Exec(ctx, clearScoreboardForGame, game)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+func (q *Queries) ClearScoreboard(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, clearScoreboard)
+	return err
 }
 
 const getMemberGlobalScore = `-- name: GetMemberGlobalScore :one
@@ -32,7 +26,7 @@ SELECT
     ) position,
     sum(score) score
 FROM
-    scoreboards
+    public.scoreboards
 WHERE
     member = $1
 `
@@ -60,7 +54,7 @@ FROM (
         ) position,
         score
     FROM
-        scoreboards
+        public.scoreboards
     WHERE
         game = $1
 )
@@ -97,7 +91,7 @@ FROM (
         member,
         score
     FROM
-        scoreboards
+        public.scoreboards
     WHERE
         game = $1
 )
@@ -140,7 +134,7 @@ SELECT
     member,
     sum(score) score
 FROM
-    scoreboards
+    public.scoreboards
 GROUP BY
     member
 `
@@ -180,7 +174,7 @@ SELECT
     member,
     score
 FROM
-    scoreboards
+    public.scoreboards
 WHERE
     game = $1
 `
@@ -211,11 +205,11 @@ func (q *Queries) ShowScoreboardForGame(ctx context.Context, game ScoreboardGame
 	return items, nil
 }
 
-const updateScoreboardForGame = `-- name: UpdateScoreboardForGame :execrows
+const updateScoreboardForGame = `-- name: UpdateScoreboardForGame :exec
 INSERT INTO
-    scoreboards (member, score, game)
+    public.scoreboards (member, score, game)
 VALUES
-    ($1, $2, $3) ON CONFLICT (member) DO
+    ($1, 1, $2) ON CONFLICT (member) DO
 UPDATE
 SET
     score = score + 1
@@ -223,14 +217,10 @@ SET
 
 type UpdateScoreboardForGameParams struct {
 	Member int64
-	Score  int16
 	Game   ScoreboardGame
 }
 
-func (q *Queries) UpdateScoreboardForGame(ctx context.Context, arg UpdateScoreboardForGameParams) (int64, error) {
-	result, err := q.db.Exec(ctx, updateScoreboardForGame, arg.Member, arg.Score, arg.Game)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+func (q *Queries) UpdateScoreboardForGame(ctx context.Context, arg UpdateScoreboardForGameParams) error {
+	_, err := q.db.Exec(ctx, updateScoreboardForGame, arg.Member, arg.Game)
+	return err
 }

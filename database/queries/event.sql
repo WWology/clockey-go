@@ -1,15 +1,15 @@
 -- name: CreateEvent :exec
-INSERT INTO events (name, time, type, gardener, hours) VALUES ($1, $2, $3, $4, $5);
+INSERT INTO public.events (name, time, type, gardener, hours) VALUES ($1, $2, $3, $4, $5);
 
 -- name: DeleteEvent :exec
-DELETE FROM events
+DELETE FROM public.events
 WHERE name = $1 AND time = $2 AND type = $3 AND hours = $4;
 
 -- name: GetEventsForGardener :many
 SELECT
     *
 FROM
-    events
+    public.events
 WHERE time BETWEEN @start_time AND @end_time
 AND gardener = $1;
 
@@ -17,6 +17,6 @@ AND gardener = $1;
 SELECT
     *
 FROM
-    events
+    public.events
 WHERE time BETWEEN @start_time AND @end_time
 AND type = $1;

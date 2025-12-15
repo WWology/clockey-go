@@ -10,7 +10,7 @@ import (
 )
 
 const createEvent = `-- name: CreateEvent :exec
-INSERT INTO events (name, time, type, gardener, hours) VALUES ($1, $2, $3, $4, $5)
+INSERT INTO public.events (name, time, type, gardener, hours) VALUES ($1, $2, $3, $4, $5)
 `
 
 type CreateEventParams struct {
@@ -33,7 +33,7 @@ func (q *Queries) CreateEvent(ctx context.Context, arg CreateEventParams) error 
 }
 
 const deleteEvent = `-- name: DeleteEvent :exec
-DELETE FROM events
+DELETE FROM public.events
 WHERE name = $1 AND time = $2 AND type = $3 AND hours = $4
 `
 
@@ -58,7 +58,7 @@ const getEventsForGame = `-- name: GetEventsForGame :many
 SELECT
     id, name, time, type, gardener, hours
 FROM
-    events
+    public.events
 WHERE time BETWEEN $2 AND $3
 AND type = $1
 `
@@ -100,7 +100,7 @@ const getEventsForGardener = `-- name: GetEventsForGardener :many
 SELECT
     id, name, time, type, gardener, hours
 FROM
-    events
+    public.events
 WHERE time BETWEEN $2 AND $3
 AND gardener = $1
 `

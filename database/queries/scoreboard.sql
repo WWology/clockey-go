@@ -1,8 +1,8 @@
--- name: UpdateScoreboardForGame :execrows
+-- name: UpdateScoreboardForGame :exec
 INSERT INTO
-    scoreboards (member, score, game)
+    public.scoreboards (member, score, game)
 VALUES
-    ($1, $2, $3) ON CONFLICT (member) DO
+    ($1, 1, $2) ON CONFLICT (member) DO
 UPDATE
 SET
     score = score + 1;
@@ -16,15 +16,12 @@ SELECT
     member,
     score
 FROM
-    scoreboards
+    public.scoreboards
 WHERE
     game = $1;
 
--- name: ClearScoreboardForGame :execrows
-DELETE FROM
-    scoreboards
-WHERE
-    game = $1;
+-- name: ClearScoreboard :exec
+TRUNCATE TABLE public.scoreboards;
 
 -- name: GetWinnerForGame :many
 SELECT
@@ -38,7 +35,7 @@ FROM (
         member,
         score
     FROM
-        scoreboards
+        public.scoreboards
     WHERE
         game = $1
 )
@@ -56,7 +53,7 @@ FROM (
         ) position,
         score
     FROM
-        scoreboards
+        public.scoreboards
     WHERE
         game = $1
 )
@@ -72,7 +69,7 @@ SELECT
     member,
     sum(score) score
 FROM
-    scoreboards
+    public.scoreboards
 GROUP BY
     member;
 
@@ -84,6 +81,6 @@ SELECT
     ) position,
     sum(score) score
 FROM
-    scoreboards
+    public.scoreboards
 WHERE
     member = $1;
