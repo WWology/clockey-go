@@ -1,13 +1,14 @@
 package signups
 
 import (
-	"clockey/database/sqlc"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/snowflake/v2"

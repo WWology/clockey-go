@@ -1,12 +1,13 @@
 package predictions
 
 import (
-	"clockey/app"
-	"clockey/database/sqlc"
 	"context"
 	"fmt"
 	"slices"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"

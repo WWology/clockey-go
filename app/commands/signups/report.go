@@ -1,14 +1,15 @@
 package signups
 
 import (
-	"clockey/app"
-	"clockey/database/sqlc"
 	"context"
 	"fmt"
 	"log/slog"
 	"strings"
 	"sync"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"

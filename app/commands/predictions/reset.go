@@ -1,9 +1,10 @@
 package predictions
 
 import (
-	"clockey/app"
 	"context"
 	"time"
+
+	"clockey/app"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"

@@ -1,9 +1,10 @@
 package signups
 
 import (
-	"clockey/app"
 	"regexp"
 	"strings"
+
+	"clockey/app"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"

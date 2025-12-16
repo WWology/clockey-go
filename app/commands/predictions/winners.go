@@ -1,11 +1,12 @@
 package predictions
 
 import (
-	"clockey/app"
-	"clockey/database/sqlc"
 	"context"
 	"fmt"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
@@ -42,22 +43,22 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			return err
 		}
 
-		dotaWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGame("Dota"))
+		dotaWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGameDota)
 		if err != nil {
 			return err
 		}
 
-		csWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGame("CS"))
+		csWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGameCS)
 		if err != nil {
 			return err
 		}
 
-		mlbbWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGame("MLBB"))
+		mlbbWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGameMLBB)
 		if err != nil {
 			return err
 		}
 
-		hokWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGame("HoK"))
+		hokWinners, err := b.DB.Queries.GetWinnerForGame(ctx, sqlc.ScoreboardGameHoK)
 		if err != nil {
 			return err
 		}

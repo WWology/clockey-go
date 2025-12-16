@@ -1,12 +1,13 @@
 package signups
 
 import (
-	"clockey/app"
-	"clockey/database/sqlc"
 	"context"
 	"log/slog"
 	"strconv"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"

@@ -2,12 +2,13 @@ package predictions
 
 import (
 	"bytes"
-	"clockey/app"
-	"clockey/database/sqlc"
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
+
+	"clockey/app"
+	"clockey/database/sqlc"
+	"database/sql"
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/discord"
