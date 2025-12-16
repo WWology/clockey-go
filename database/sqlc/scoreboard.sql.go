@@ -18,48 +18,97 @@ func (q *Queries) ClearScoreboard(ctx context.Context) error {
 	return err
 }
 
+const getGlobalWinner = `-- name: GetGlobalWinner :many
+WITH
+    GlobalRankedLeaderboard AS (
+        SELECT
+            DENSE_RANK() OVER (
+                ORDER BY
+                    sum(score) DESC
+            ) AS position,
+            member,
+            sum(score) AS score
+        FROM
+            public.scoreboards
+        GROUP BY
+            member
+    )
+SELECT
+    position, member, score
+FROM
+    GlobalRankedLeaderboard
+WHERE
+    position = 1
+`
+
+type GetGlobalWinnerRow struct {
+	Position int64
+	Member   int64
+	Score    int64
+}
+
+func (q *Queries) GetGlobalWinner(ctx context.Context) ([]GetGlobalWinnerRow, error) {
+	rows, err := q.db.Query(ctx, getGlobalWinner)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetGlobalWinnerRow
+	for rows.Next() {
+		var i GetGlobalWinnerRow
+		if err := rows.Scan(&i.Position, &i.Member, &i.Score); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMemberGlobalScore = `-- name: GetMemberGlobalScore :one
 SELECT
     DENSE_RANK() OVER (
         ORDER BY
             sum(score) DESC
-    ) position,
-    sum(score) score
+    ) AS position,
+    member,
+    sum(score) AS score
 FROM
     public.scoreboards
-WHERE
+GROUP BY
+    member
+HAVING
     member = $1
 `
 
 type GetMemberGlobalScoreRow struct {
 	Position int64
+	Member   int64
 	Score    int64
 }
 
 func (q *Queries) GetMemberGlobalScore(ctx context.Context, member int64) (GetMemberGlobalScoreRow, error) {
 	row := q.db.QueryRow(ctx, getMemberGlobalScore, member)
 	var i GetMemberGlobalScoreRow
-	err := row.Scan(&i.Position, &i.Score)
+	err := row.Scan(&i.Position, &i.Member, &i.Score)
 	return i, err
 }
 
 const getMemberScoreForGame = `-- name: GetMemberScoreForGame :one
 SELECT
-    position, score
-FROM (
-    SELECT
-        DENSE_RANK() OVER (
-            ORDER BY
-                score DESC
-        ) position,
-        score
-    FROM
-        public.scoreboards
-    WHERE
-        game = $1
-)
+    DENSE_RANK() OVER (
+        ORDER BY
+            score DESC
+    ) position,
+    member,
+    score
+FROM
+    public.scoreboards
 WHERE
-    member = $2
+    game = $1
+    AND member = $2
 `
 
 type GetMemberScoreForGameParams struct {
@@ -69,13 +118,14 @@ type GetMemberScoreForGameParams struct {
 
 type GetMemberScoreForGameRow struct {
 	Position int64
+	Member   int64
 	Score    int16
 }
 
 func (q *Queries) GetMemberScoreForGame(ctx context.Context, arg GetMemberScoreForGameParams) (GetMemberScoreForGameRow, error) {
 	row := q.db.QueryRow(ctx, getMemberScoreForGame, arg.Game, arg.Member)
 	var i GetMemberScoreForGameRow
-	err := row.Scan(&i.Position, &i.Score)
+	err := row.Scan(&i.Position, &i.Member, &i.Score)
 	return i, err
 }
 
@@ -129,10 +179,10 @@ const showGlobalScoreboard = `-- name: ShowGlobalScoreboard :many
 SELECT
     DENSE_RANK() OVER (
         ORDER BY
-            score DESC
-    ) position,
+            sum(score) DESC
+    ) AS position,
     member,
-    sum(score) score
+    sum(score) AS score
 FROM
     public.scoreboards
 GROUP BY
@@ -170,7 +220,7 @@ SELECT
     DENSE_RANK() OVER (
         ORDER BY
             score DESC
-    ) position,
+    ) AS position,
     member,
     score
 FROM
@@ -209,10 +259,10 @@ const updateScoreboardForGame = `-- name: UpdateScoreboardForGame :exec
 INSERT INTO
     public.scoreboards (member, score, game)
 VALUES
-    ($1, 1, $2) ON CONFLICT (member) DO
+    ($1, 1, $2) ON CONFLICT ON CONSTRAINT scoreboards_pkey DO
 UPDATE
 SET
-    score = score + 1
+    score = scoreboards.score + 1
 `
 
 type UpdateScoreboardForGameParams struct {
