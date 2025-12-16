@@ -23,10 +23,6 @@ var Add = discord.SlashCommandCreate{
 			Required:    true,
 			Choices: []discord.ApplicationCommandOptionChoiceString{
 				{
-					Name:  "Global",
-					Value: "Global",
-				},
-				{
 					Name:  "Dota",
 					Value: "Dota",
 				},
