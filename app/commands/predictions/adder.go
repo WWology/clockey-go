@@ -64,7 +64,13 @@ func AddCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 		if err != nil {
 			return err
 		}
-		defer tx.Rollback(ctx)
+
+		defer func() {
+			if err := tx.Rollback(ctx); err != nil {
+				slog.Error("failed to rollback transaction", slog.Any("err", err))
+			}
+		}()
+
 		count := 0
 		for member := range guildMembers {
 			if slices.Contains(member.RoleIDs, data.Role("role").ID) {
