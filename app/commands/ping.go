@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 )
@@ -14,7 +16,7 @@ func PingCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		latency := e.Client().Gateway.Latency()
 		return e.CreateMessage(discord.MessageCreate{
-			Content: "Pong! Latency: " + latency.String(),
+			Content: fmt.Sprintf("Pong! Latency: %dms", latency.Milliseconds()),
 		})
 	}
 }
