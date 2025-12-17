@@ -1,6 +1,7 @@
 package signups
 
 import (
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -42,6 +43,7 @@ func EditCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
 		msg, err := e.Client().Rest.GetMessage(e.Channel().ID(), snowflake.MustParse(data.String("message_id")))
 		if err != nil {
+			slog.Error("DisGo error(failed to get message)", slog.Any("err", err))
 			return err
 		}
 		replyText := "Updated event details: \n"
@@ -76,14 +78,16 @@ func EditCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			}
 		}
 
-		e.Client().Rest.UpdateMessage(e.Channel().ID(), snowflake.MustParse(data.String("message_id")), discord.MessageUpdate{
+		if _, err := e.Client().Rest.UpdateMessage(e.Channel().ID(), snowflake.MustParse(data.String("message_id")), discord.MessageUpdate{
 			Content: &msg.Content,
-		})
+		}); err != nil {
+			slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+			return err
+		}
 
-		e.CreateMessage(discord.MessageCreate{
+		return e.CreateMessage(discord.MessageCreate{
 			Content: replyText,
 		})
 
-		return nil
 	}
 }
