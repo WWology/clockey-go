@@ -12,11 +12,11 @@ import (
 type EventType string
 
 const (
-	EventTypeDota   EventType = "Dota"
-	EventTypeCS     EventType = "CS"
-	EventTypeMLBB   EventType = "MLBB"
-	EventTypeHoK    EventType = "HoK"
-	EventTypeOthers EventType = "Others"
+	EventTypeDota  EventType = "Dota"
+	EventTypeCS    EventType = "CS"
+	EventTypeMLBB  EventType = "MLBB"
+	EventTypeHoK   EventType = "HoK"
+	EventTypeOther EventType = "Other"
 )
 
 func (e *EventType) Scan(src interface{}) error {
