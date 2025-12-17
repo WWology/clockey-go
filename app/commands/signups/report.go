@@ -52,7 +52,11 @@ var Report = discord.SlashCommandCreate{
 
 func ReportCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-		e.DeferCreateMessage(true)
+		if err := e.DeferCreateMessage(true); err != nil {
+			slog.Error("DisGo error(failed to defer interaction response)", slog.Any("err", err))
+			return err
+		}
+
 		startDateString := data.String("start_date")
 		startDate, err := time.Parse("02-01-2006", startDateString)
 		if err != nil {
@@ -108,7 +112,7 @@ func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time
 			}); err == nil {
 				invoices <- GameReportResult{Game: game, Events: events}
 			} else {
-				b.Client.Logger.Error("Failed to get invoice ", slog.Any("game", game))
+				slog.Error("Failed to get invoice ", slog.Any("game", game))
 			}
 		})
 	}
@@ -168,7 +172,7 @@ func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time
 		Components: omit.Ptr(layout),
 		Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 	}); err != nil {
-		e.Client().Logger.Error("Failed to send game report message", slog.Any("err", err))
+		slog.Error("DisGo error(failed to send game report message)", slog.Any("err", err))
 		return err
 	}
 
@@ -195,7 +199,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 			}); err == nil {
 				invoices <- GardenerReportResult{Gardener: name, Events: events}
 			} else {
-				b.Client.Logger.Error("Failed to get invoice ", slog.Any("name", name))
+				slog.Error("Failed to get invoice ", slog.Any("name", name))
 			}
 			// events := test.GetTestEventsForGardener(int64(id))
 			// invoices <- Invoice{Gardener: name, Events: events}
@@ -299,7 +303,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 		Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 	})
 	if err != nil {
-		e.Client().Logger.Error("Failed to send invoice message", slog.Any("err", err))
+		slog.Error("failed to send invoice message", slog.Any("err", err))
 		return err
 	}
 
@@ -327,35 +331,35 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 						Components: omit.Ptr(layouts["N1k"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						c.Client().Logger.Error("Failed to update message to N1k", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to N1k)", slog.Any("err", err))
 					}
 				case "kit_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
 						Components: omit.Ptr(layouts["Kit"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						c.Client().Logger.Error("Failed to update message to Kit", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to Kit)", slog.Any("err", err))
 					}
 				case "ww_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
 						Components: omit.Ptr(layouts["WW"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						c.Client().Logger.Error("Failed to update message to WW", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to WW)", slog.Any("err", err))
 					}
 				case "bonteng_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
 						Components: omit.Ptr(layouts["Bonteng"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						c.Client().Logger.Error("Failed to update message to Bonteng", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to Bonteng)", slog.Any("err", err))
 					}
 				case "sam_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
 						Components: omit.Ptr(layouts["Sam"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						c.Client().Logger.Error("Failed to update message to Sam", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to Sam)", slog.Any("err", err))
 					}
 				default:
 					continue
