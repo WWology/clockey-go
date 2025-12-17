@@ -3,6 +3,7 @@ package signups
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"clockey/app"
@@ -52,6 +53,7 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 				buttons,
 			},
 		}); err != nil {
+			slog.Error("DisGo error(failed to create cancel confirmation message)", slog.Any("err", err))
 			return err
 		}
 
@@ -61,7 +63,7 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					return c.Data.CustomID() == "cancel_event_yes" || c.Data.CustomID() == "cancel_event_no"
 				})
 			defer cls()
-			ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Minute)
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			select {
 			case <-ctx.Done():
@@ -70,9 +72,7 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 				if c.Data.CustomID() == "cancel_event_yes" {
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
 					if err != nil {
-						c.CreateMessage(discord.MessageCreate{
-							Content: "Error parsing message, please try again",
-						})
+						slog.Error("failed to parse message", slog.Any("err", err))
 						return
 					}
 
@@ -82,16 +82,23 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						Time:  eventTime,
 						Hours: hours,
 					}); err != nil {
-						c.CreateMessage(discord.MessageCreate{
+						if err := c.CreateMessage(discord.MessageCreate{
 							Content: "Error cancelling event, please try again",
-						})
+						}); err != nil {
+							slog.Error("DisGo error(failed to create error cancelling event message)", slog.Any("err", err))
+						}
 						return
 					}
-					e.UpdateInteractionResponse(discord.MessageUpdate{
+					if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 						Content:    omit.Ptr(fmt.Sprintf("%s - %s cancelled", eventType, name)),
 						Components: &[]discord.LayoutComponent{},
-					})
-					c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), data.TargetID(), processedEmoji)
+					}); err != nil {
+						slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					}
+
+					if err := c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), data.TargetID(), processedEmoji); err != nil {
+						slog.Error("DisGo error(failed to remove own reaction)", slog.Any("err", err))
+					}
 				} else {
 					return
 				}
