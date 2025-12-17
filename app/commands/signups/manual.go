@@ -26,23 +26,23 @@ var Manual = discord.SlashCommandCreate{
 			Choices: []discord.ApplicationCommandOptionChoiceString{
 				{
 					Name:  "N1k",
-					Value: "N1k",
+					Value: "293360731867316225",
 				},
 				{
 					Name:  "Kit",
-					Value: "Kit",
+					Value: "204923365205475329",
 				},
 				{
 					Name:  "WW",
-					Value: "WW",
+					Value: "754724309276164159",
 				},
 				{
 					Name:  "Bonteng",
-					Value: "Bonteng",
+					Value: "172360818715918337",
 				},
 				{
 					Name:  "Sam",
-					Value: "Sam",
+					Value: "332438787588227072",
 				},
 			},
 		},
@@ -75,14 +75,12 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						return
 					}
 
-					eventType := m.Data.StringValues("event_type")[0]
-					name := m.Data.Text("event_name")
 					hours, _ := strconv.ParseInt(m.Data.Text("event_duration"), 10, 16)
-					gardener, _ := strconv.ParseInt(m.Data.Text("gardener"), 10, 64)
+					gardener, _ := strconv.ParseInt(data.String("gardener"), 10, 64)
 
 					if err := b.DB.Queries.CreateEvent(ctx, sqlc.CreateEventParams{
-						Type:     sqlc.EventType(eventType),
-						Name:     name,
+						Type:     sqlc.EventType(m.Data.StringValues("event_type")[0]),
+						Name:     m.Data.Text("event_name"),
 						Time:     unixValue,
 						Hours:    int16(hours),
 						Gardener: gardener,
