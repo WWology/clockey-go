@@ -99,6 +99,13 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					if err := c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), data.TargetID(), processedEmoji); err != nil {
 						slog.Error("DisGo error(failed to remove own reaction)", slog.Any("err", err))
 					}
+				} else if c.Data.CustomID() == "cancel_event_no" {
+					if err := c.UpdateMessage(discord.MessageUpdate{
+						Content:    omit.Ptr("Event cancellation aborted"),
+						Components: &[]discord.LayoutComponent{},
+					}); err != nil {
+						slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+					}
 				} else {
 					return
 				}
