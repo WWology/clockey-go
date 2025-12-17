@@ -12,10 +12,11 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/omit"
 )
 
 var Cancel = discord.MessageCommandCreate{
-	Name: "Cancel Signup",
+	Name: "Cancel Event",
 	Contexts: []discord.InteractionContextType{
 		discord.InteractionContextTypeGuild,
 	},
@@ -67,7 +68,7 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 				return
 			case c := <-ch:
 				if c.Data.CustomID() == "cancel_event_yes" {
-					eventType, name, eventTime, hours, err := parseMessage(c.Message.Content)
+					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
 					if err != nil {
 						c.CreateMessage(discord.MessageCreate{
 							Content: "Error parsing message, please try again",
@@ -86,10 +87,11 @@ func CancelCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						})
 						return
 					}
-					c.CreateMessage(discord.MessageCreate{
-						Content: fmt.Sprintf("%s - %s cancelled", eventType, name),
+					e.UpdateInteractionResponse(discord.MessageUpdate{
+						Content:    omit.Ptr(fmt.Sprintf("%s - %s cancelled", eventType, name)),
+						Components: &[]discord.LayoutComponent{},
 					})
-					c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), c.Message.ID, processedEmoji)
+					c.Client().Rest.RemoveOwnReaction(c.Channel().ID(), data.TargetID(), processedEmoji)
 				} else {
 					return
 				}
