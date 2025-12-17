@@ -175,26 +175,41 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			// Check if member exists in cache
 			if cachedMember, exists := e.Client().Caches.Member(*e.GuildID(), snowflake.ID(score.Member)); exists {
 				name := truncate(cachedMember.EffectiveName())
-				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+					slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+					return err
+				}
 			} else {
 				// Make API calls if not in cache
 				if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
 					name := truncate(member.EffectiveName())
-					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+						slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+						return err
+					}
 				} else {
 					// If not, fetch user info
 					if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
 						name := truncate(user.EffectiveName())
-						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+						if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+							slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+							return err
+						}
 					} else {
 						// Fallback to unknown user
 						name := "Unknown User"
-						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+						if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+							slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			}
 		}
-		table.Render()
+		if err := table.Render(); err != nil {
+			slog.Error("tablewriter error(failed to render table)", slog.Any("err", err))
+			return err
+		}
 
 		layout := []discord.LayoutComponent{
 			discord.TextDisplayComponent{
@@ -308,26 +323,41 @@ func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
 			// Check if member exists in cache
 			if cachedMember, exists := e.Client().Caches.Member(*e.GuildID(), snowflake.ID(score.Member)); exists {
 				name := truncate(cachedMember.EffectiveName())
-				table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+				if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+					slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+					return err
+				}
 			} else {
 				// Make API calls if not in cache
 				if member, err := e.Client().Rest.GetMember(*e.GuildID(), snowflake.ID(score.Member)); err == nil {
 					name := truncate(member.EffectiveName())
-					table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+					if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+						slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+						return err
+					}
 				} else {
 					// If not, fetch user info
 					if user, err := e.Client().Rest.GetUser(snowflake.ID(score.Member)); err == nil {
 						name := truncate(user.EffectiveName())
-						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+						if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+							slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+							return err
+						}
 					} else {
 						// Fallback to unknown user
 						name := "Unknown User"
-						table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)})
+						if err := table.Append([]string{fmt.Sprint(score.Position), name, fmt.Sprint(score.Score)}); err != nil {
+							slog.Error("tablewriter error(failed to append row)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			}
 		}
-		table.Render()
+		if err := table.Render(); err != nil {
+			slog.Error("tablewriter error(failed to render table)", slog.Any("err", err))
+			return err
+		}
 
 		layout := []discord.LayoutComponent{
 			discord.TextDisplayComponent{
