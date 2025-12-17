@@ -70,7 +70,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					// Handle the event details submission
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
 					if err != nil {
-						slog.Error("Failed to parse event_time", slog.String("event_time", m.Data.Text("event_time")), slog.Any("err", err))
+						slog.Error("failed to parse event_time", slog.String("event_time", m.Data.Text("event_time")), slog.Any("err", err))
 						if err := m.CreateMessage(discord.MessageCreate{
 							Content: m.Data.Text("event_time") + " is not a valid unix time. Please try again.",
 						}); err != nil {
@@ -89,7 +89,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						Hours:    int16(hours),
 						Gardener: gardener,
 					}); err != nil {
-						slog.Error("Failed to create event in database", slog.Any("err", err))
+						slog.Error("failed to create event in database", slog.Any("err", err))
 						return
 					}
 
@@ -174,7 +174,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 							slog.Error("DisGo error(failed to create scheduled event)", slog.Any("err", err))
 						}
 					default:
-						panic(fmt.Sprintf("Invalid state: %s", m.Data.StringValues("event_type")[0]))
+						panic(fmt.Sprintf("invalid state: %s", m.Data.StringValues("event_type")[0]))
 					}
 
 				},
