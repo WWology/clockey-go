@@ -65,7 +65,6 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 					gardenerID, _ := strconv.ParseInt(selectedGardenerID, 10, 64)
 
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
-					print(eventType, name, eventTime, hours)
 					if err != nil {
 						s.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
 						return
