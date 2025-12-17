@@ -139,15 +139,15 @@ var eventModal = discord.ModalCreate{
 	},
 }
 
-func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon {
+func getBanner(attachment discord.Attachment) *discord.Icon {
 	resp, err := http.Get(attachment.URL)
 	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		slog.Error("Failed to get attachment URL", slog.Any("err", err))
 		return nil
 	}
 	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
 	if err != nil {
-		Logger.Error("Failed to create banner icon", slog.Any("err", err))
+		slog.Error("Failed to create banner icon", slog.Any("err", err))
 		return nil
 	}
 	return banner

@@ -37,6 +37,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 		// Show gardener selection menu
 		gardenerSelectMenu, err := gardenerSelectMenuBuilder(e, data.TargetMessage())
 		if err != nil {
+			slog.Error("DisGo error(failed to build gardener select menu)", slog.Any("err", err))
 			return err
 		}
 
@@ -50,6 +51,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 			},
 			Flags: discord.MessageFlagEphemeral,
 		}); err != nil {
+			slog.Error("DisGo error(failed to send message)", slog.Any("err", err))
 			return err
 		}
 
@@ -66,7 +68,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 
 					eventType, name, eventTime, hours, err := parseMessage(data.TargetMessage().Content)
 					if err != nil {
-						s.Client().Logger.Error("Failed to parse message", slog.Any("err", err))
+						slog.Error("failed to parse message", slog.Any("err", err))
 						return
 					}
 
@@ -77,18 +79,20 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						Hours:    hours,
 						Gardener: gardenerID,
 					}); err != nil {
-						s.Client().Logger.Error("Failed to create event in database", slog.Any("err", err))
+						slog.Error("failed to create event in database", slog.Any("err", err))
 						return
 					}
 
 					if err := s.Client().Rest.AddReaction(data.TargetMessage().ChannelID, data.TargetMessage().ID, processedEmoji); err != nil {
-						s.Client().Logger.Error("Failed to add reaction", slog.Any("err", err))
+						slog.Error("DisGo error(failed to add reaction)", slog.Any("err", err))
 					}
 
-					s.UpdateMessage(discord.MessageUpdate{
+					if err := s.UpdateMessage(discord.MessageUpdate{
 						Content:    omit.Ptr("Hours added to the database"),
 						Components: &[]discord.LayoutComponent{},
-					})
+					}); err != nil {
+						slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+					}
 
 					if _, err := s.Client().Rest.CreateMessage(s.Message.ChannelID, discord.MessageCreate{
 						MessageReference: &discord.MessageReference{
@@ -97,13 +101,13 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 							ChannelID: omit.Ptr(data.TargetMessage().ChannelID),
 						},
 					}); err != nil {
-						s.Client().Logger.Error("Failed to send message reference", slog.Any("err", err))
+						slog.Error("DisGo error(failed to send message reference)", slog.Any("err", err))
 					}
 
 					if _, err := s.Client().Rest.CreateMessage(s.Message.ChannelID, discord.MessageCreate{
 						Content: "<@" + selectedGardenerID + "> will be working " + name,
 					}); err != nil {
-						s.Client().Logger.Error("Failed to send message", slog.Any("err", err))
+						slog.Error("DisGo error(failed to send message)", slog.Any("err", err))
 					}
 
 				},
@@ -112,7 +116,7 @@ func GardenerCommandHandler(b *app.Bot) handler.MessageCommandHandler {
 						Content: "Gardener selection timed out.",
 						Flags:   discord.MessageFlagEphemeral,
 					}); err != nil {
-						e.Client().Logger.Error("Failed to send timeout message", slog.Any("err", err))
+						slog.Error("DisGo error(failed to send timeout message)", slog.Any("err", err))
 					}
 				},
 			)
