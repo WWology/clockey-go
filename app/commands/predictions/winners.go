@@ -33,7 +33,10 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			for _, roleID := range member.RoleIDs {
 				if roleID == theOracleRoleID || roleID == dotaOracleRoleID || roleID == csOracleRoleID || roleID == mlbbOracleRoleID || roleID == hokOracleRoleID {
 					// Remove previous winner roles
-					e.Client().Rest.RemoveMemberRole(*e.GuildID(), member.User.ID, roleID)
+					if err := e.Client().Rest.RemoveMemberRole(*e.GuildID(), member.User.ID, roleID); err != nil {
+						slog.Error("DisGo error(failed to remove member role)", slog.Any("err", err))
+						return err
+					}
 				}
 			}
 		}
@@ -75,7 +78,10 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			} else {
 				replyText += fmt.Sprintf(", <@%d>", winner.Member)
 			}
-			e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), theOracleRoleID)
+			if err := e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), theOracleRoleID); err != nil {
+				slog.Error("DisGo error(failed to add member role)", slog.Any("err", err))
+				return err
+			}
 		}
 
 		for i, winner := range dotaWinners {
@@ -84,7 +90,10 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			} else {
 				replyText += fmt.Sprintf(", <@%d>", winner.Member)
 			}
-			e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), dotaOracleRoleID)
+			if err := e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), dotaOracleRoleID); err != nil {
+				slog.Error("DisGo error(failed to add member role)", slog.Any("err", err))
+				return err
+			}
 		}
 
 		for i, winner := range csWinners {
@@ -93,7 +102,10 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			} else {
 				replyText += fmt.Sprintf(", <@%d>", winner.Member)
 			}
-			e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), csOracleRoleID)
+			if err := e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), csOracleRoleID); err != nil {
+				slog.Error("DisGo error(failed to add member role)", slog.Any("err", err))
+				return err
+			}
 		}
 
 		for i, winner := range mlbbWinners {
@@ -102,7 +114,10 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			} else {
 				replyText += fmt.Sprintf(", <@%d>", winner.Member)
 			}
-			e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), mlbbOracleRoleID)
+			if err := e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), mlbbOracleRoleID); err != nil {
+				slog.Error("DisGo error(failed to add member role)", slog.Any("err", err))
+				return err
+			}
 		}
 
 		for i, winner := range hokWinners {
@@ -111,12 +126,18 @@ func WinnersCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			} else {
 				replyText += fmt.Sprintf(", <@%d>", winner.Member)
 			}
-			e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), hokOracleRoleID)
+			if err := e.Client().Rest.AddMemberRole(*e.GuildID(), snowflake.ID(winner.Member), hokOracleRoleID); err != nil {
+				slog.Error("DisGo error(failed to add member role)", slog.Any("err", err))
+				return err
+			}
 		}
 
-		e.UpdateInteractionResponse(discord.MessageUpdate{
+		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 			Content: omit.Ptr(replyText),
-		})
+		}); err != nil {
+			slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+			return err
+		}
 
 		return nil
 	}

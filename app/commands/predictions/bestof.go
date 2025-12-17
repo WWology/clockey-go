@@ -68,6 +68,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 			for _, roleName := range rolesToBeCreated {
 				if _, err := e.Client().Rest.CreateRole(*e.GuildID(), discord.RoleCreate{Name: roleName}); err != nil {
+					slog.Error("DisGo error(failed to create role)", slog.Any("err", err))
 					return err
 				}
 			}
@@ -79,6 +80,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 			for _, roleName := range rolesToBeCreated {
 				if _, err := e.Client().Rest.CreateRole(*e.GuildID(), discord.RoleCreate{Name: roleName}); err != nil {
+					slog.Error("DisGo error(failed to create role)", slog.Any("err", err))
 					return err
 				}
 			}
@@ -91,6 +93,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 			for _, roleName := range rolesToBeCreated {
 				if _, err := e.Client().Rest.CreateRole(*e.GuildID(), discord.RoleCreate{Name: roleName}); err != nil {
+					slog.Error("DisGo error(failed to create role)", slog.Any("err", err))
 					return err
 				}
 			}
@@ -105,6 +108,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 			for _, roleName := range rolesToBeCreated {
 				if _, err := e.Client().Rest.CreateRole(*e.GuildID(), discord.RoleCreate{Name: roleName}); err != nil {
+					slog.Error("DisGo error(failed to create role)", slog.Any("err", err))
 					return err
 				}
 			}
@@ -121,6 +125,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 			}
 			for _, roleName := range rolesToBeCreated {
 				if _, err := e.Client().Rest.CreateRole(*e.GuildID(), discord.RoleCreate{Name: roleName}); err != nil {
+					slog.Error("DisGo error(failed to create role)", slog.Any("err", err))
 					return err
 				}
 			}
@@ -193,10 +198,14 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
 				for _, role := range roles {
 					if slices.Contains(rolesToBeDeleted, role.Name) {
-						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+						if err := e.Client().Rest.DeleteRole(*e.GuildID(), role.ID); err != nil {
+							slog.Error("DisGo error(failed to delete role)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			} else {
+				slog.Error("DisGo error(failed to get roles)", slog.Any("err", err))
 				return err
 			}
 		case 2:
@@ -208,10 +217,14 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
 				for _, role := range roles {
 					if slices.Contains(rolesToBeDeleted, role.Name) {
-						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+						if err := e.Client().Rest.DeleteRole(*e.GuildID(), role.ID); err != nil {
+							slog.Error("DisGo error(failed to delete role)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			} else {
+				slog.Error("DisGo error(failed to get roles)", slog.Any("err", err))
 				return err
 			}
 		case 3:
@@ -224,10 +237,14 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
 				for _, role := range roles {
 					if slices.Contains(rolesToBeDeleted, role.Name) {
-						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+						if err := e.Client().Rest.DeleteRole(*e.GuildID(), role.ID); err != nil {
+							slog.Error("DisGo error(failed to delete role)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			} else {
+				slog.Error("DisGo error(failed to get roles)", slog.Any("err", err))
 				return err
 			}
 		case 5:
@@ -242,10 +259,14 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
 				for _, role := range roles {
 					if slices.Contains(rolesToBeDeleted, role.Name) {
-						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+						if err := e.Client().Rest.DeleteRole(*e.GuildID(), role.ID); err != nil {
+							slog.Error("DisGo error(failed to delete role)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			} else {
+				slog.Error("DisGo error(failed to get roles)", slog.Any("err", err))
 				return err
 			}
 		case 7:
@@ -262,16 +283,21 @@ func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 			if roles, err := e.Client().Rest.GetRoles(*e.GuildID()); err == nil {
 				for _, role := range roles {
 					if slices.Contains(rolesToBeDeleted, role.Name) {
-						e.Client().Rest.DeleteRole(*e.GuildID(), role.ID)
+						if err := e.Client().Rest.DeleteRole(*e.GuildID(), role.ID); err != nil {
+							slog.Error("DisGo error(failed to delete role)", slog.Any("err", err))
+							return err
+						}
 					}
 				}
 			} else {
+				slog.Error("DisGo error(failed to get roles)", slog.Any("err", err))
 				return err
 			}
 		}
 		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 			Content: omit.Ptr("Prediction roles deleted for " + game + " best of " + fmt.Sprint(seriesLength)),
 		}); err != nil {
+			slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
 			return err
 		}
 		return nil
