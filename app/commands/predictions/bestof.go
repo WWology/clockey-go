@@ -134,6 +134,7 @@ func BestOfCommandHandler() handler.SlashCommandHandler {
 		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 			Content: omit.Ptr("Prediction roles created for " + game + " best of " + fmt.Sprint(seriesLength)),
 		}); err != nil {
+			slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
 			return err
 		}
 		return nil

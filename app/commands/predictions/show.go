@@ -76,20 +76,29 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			if res, err := b.DB.Queries.GetMemberGlobalScore(ctx, int64(user.ID)); err == nil {
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("The global prediction score for %s is %d, ranked at %d", user.Mention(), res.Score, res.Position)),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return nil
 			} else if err == sql.ErrNoRows {
 				// If user's not found
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("%s isn't found on the %s scoreboard", user.Mention(), game)),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return nil
 			} else {
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr("Something wrong has happened, please try again"),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return err
 			}
 		} else if provided && game != "Global" {
@@ -100,20 +109,29 @@ func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 				Game:   sqlc.ScoreboardGame(game),
 				Member: int64(user.ID),
 			}); err == nil {
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("The %s prediction score for %s is %d, ranked at %d", game, user.Mention(), res.Score, res.Position)),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return nil
 			} else if err == sql.ErrNoRows {
 				// If user's not found
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr(fmt.Sprintf("%s isn't found on the %s scoreboard", user.Mention(), game)),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return nil
 			} else {
-				e.UpdateInteractionResponse(discord.MessageUpdate{
+				if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 					Content: omit.Ptr("Something wrong has happened, please try again"),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return err
+				}
 				return err
 			}
 		}
@@ -243,10 +261,13 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 						currentPage = totalPage - 1
 					}
 				}
-				c.UpdateMessage(discord.MessageUpdate{
+				if err := c.UpdateMessage(discord.MessageUpdate{
 					Components: omit.Ptr(layouts[currentPage]),
 					Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+					return
+				}
 			default:
 				continue
 			}
@@ -373,10 +394,13 @@ func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
 						currentPage = totalPage - 1
 					}
 				}
-				c.UpdateMessage(discord.MessageUpdate{
+				if err := c.UpdateMessage(discord.MessageUpdate{
 					Components: omit.Ptr(layouts[currentPage]),
 					Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
-				})
+				}); err != nil {
+					slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+					return
+				}
 			default:
 				continue
 			}

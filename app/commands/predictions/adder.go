@@ -83,9 +83,12 @@ func AddCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 				count++
 			}
 		}
-		e.UpdateInteractionResponse(discord.MessageUpdate{
+		if _, err := e.UpdateInteractionResponse(discord.MessageUpdate{
 			Content: omit.Ptr(fmt.Sprintf("Added score for %d members to the %s scoreboard", count, data.String("game"))),
-		})
+		}); err != nil {
+			slog.Error("DisGo error(failed to update interaction response)", slog.Any("err", err))
+			return err
+		}
 		return tx.Commit(ctx)
 	}
 }
