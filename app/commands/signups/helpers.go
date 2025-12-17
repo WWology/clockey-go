@@ -155,7 +155,7 @@ func getBanner(attachment discord.Attachment, Logger *slog.Logger) *discord.Icon
 
 func processed(msg discord.Message) bool {
 	for _, reaction := range msg.Reactions {
-		if reaction.Emoji.Name == processedEmoji {
+		if reaction.Emoji.Reaction() == processedEmoji {
 			return true
 		}
 	}
@@ -173,7 +173,7 @@ func parseMessage(msg string) (sqlc.EventType, string, int64, int16, error) {
 	} else if strings.Contains(msg, "HoK") {
 		eventType = sqlc.EventTypeHoK
 	} else if strings.Contains(msg, "Other") {
-		eventType = sqlc.EventTypeOthers
+		eventType = sqlc.EventTypeOther
 	} else {
 		return "", "", 0, 0, fmt.Errorf("failed to parse event type")
 	}
