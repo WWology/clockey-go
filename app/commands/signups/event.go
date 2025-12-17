@@ -37,7 +37,7 @@ func EventCommandHandler() handler.SlashCommandHandler {
 				func(m *events.ModalSubmitInteractionCreate) {
 					unixValue, err := strconv.ParseInt(m.Data.Text("event_time"), 0, 64)
 					if err != nil {
-						slog.Error("Failed to parse event_time", slog.String("event_time", m.Data.Text("event_time")), slog.Any("err", err))
+						slog.Error("failed to parse event_time", slog.String("event_time", m.Data.Text("event_time")), slog.Any("err", err))
 						if err := m.CreateMessage(discord.MessageCreate{
 							Content: m.Data.Text("event_time") + " is not a valid unix time. Please try again.",
 						}); err != nil {
@@ -142,7 +142,7 @@ func EventCommandHandler() handler.SlashCommandHandler {
 							slog.Error("DisGo error(failed to create scheduled event)", slog.Any("err", err))
 						}
 					default:
-						panic(fmt.Sprintf("Invalid state: %s", m.Data.StringValues("event_type")[0]))
+						panic(fmt.Sprintf("invalid state: %s", m.Data.StringValues("event_type")[0]))
 					}
 				},
 				func() {
