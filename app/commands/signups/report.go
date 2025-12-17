@@ -99,7 +99,9 @@ func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time
 	invoices := make(chan GameReportResult, 5)
 	for _, game := range []string{"Dota", "CS", "MLBB", "HoK", "Other"} {
 		wg.Go(func() {
-			if events, err := b.DB.Queries.GetEventsForGame(context.TODO(), sqlc.GetEventsForGameParams{
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if events, err := b.DB.Queries.GetEventsForGame(ctx, sqlc.GetEventsForGameParams{
 				StartTime: startDate.Unix(),
 				EndTime:   endDate.Unix(),
 				Type:      sqlc.EventType(game),
@@ -108,8 +110,6 @@ func GenerateGameReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time
 			} else {
 				b.Client.Logger.Error("Failed to get invoice ", slog.Any("game", game))
 			}
-			// events := test.GetTestEventsForGame(game)
-			// invoices <- GameReportResult{Game: game, Events: events}
 		})
 	}
 	wg.Wait()
@@ -186,7 +186,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 	invoices := make(chan GardenerReportResult, 5)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			if events, err := b.DB.Queries.GetEventsForGardener(ctx, sqlc.GetEventsForGardenerParams{
 				StartTime: startDate.Unix(),
@@ -219,7 +219,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 				mlbbEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
 			case sqlc.EventTypeHoK:
 				hokEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
-			case sqlc.EventTypeOthers:
+			case sqlc.EventTypeOther:
 				otherEvents += fmt.Sprintf("%s at %s - %d hours\n", event.Name, schedule, event.Hours)
 			}
 			gardenerHours += int(event.Hours)
