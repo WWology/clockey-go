@@ -51,7 +51,11 @@ var Add = discord.SlashCommandCreate{
 
 func AddCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-		e.DeferCreateMessage(false)
+		if err := e.DeferCreateMessage(true); err != nil {
+			slog.Error("DisGo error(failed to defer interaction response)", slog.Any("err", err))
+			return err
+		}
+
 		guildMembers := e.Client().Caches.Members(*e.GuildID())
 
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)

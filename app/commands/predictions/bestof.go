@@ -52,7 +52,11 @@ var BestOf = discord.SlashCommandCreate{
 
 func BestOfCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-		e.DeferCreateMessage(false)
+		if err := e.DeferCreateMessage(true); err != nil {
+			slog.Error("DisGo error(failed to defer interaction response)", slog.Any("err", err))
+			return err
+		}
+
 		game := data.String("game")
 		seriesLength := data.Int("series_length")
 
@@ -173,7 +177,11 @@ var DeleteBestOf = discord.SlashCommandCreate{
 
 func DeleteBestOfCommandHandler() handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-		e.DeferCreateMessage(false)
+		if err := e.DeferCreateMessage(true); err != nil {
+			slog.Error("DisGo error(failed to defer interaction response)", slog.Any("err", err))
+			return err
+		}
+
 		game := data.String("game")
 		seriesLength := data.Int("series_length")
 		switch seriesLength {
