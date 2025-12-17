@@ -71,13 +71,17 @@ func EditCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 			hoursMatch := hoursRegex.FindStringSubmatch(msg.Content)
 			if len(hoursMatch) > 1 {
 				oldDuration := hoursMatch[1]
-				msg.Content = strings.Replace(msg.Content, oldDuration, newDuration, 1)
-				replyText += oldDuration + " hours -> " + newDuration + " hours\n"
+				msg.Content = hoursRegex.ReplaceAllString(msg.Content, "Hours: "+newDuration+" hours")
+				replyText += oldDuration + " -> " + newDuration + " hours\n"
 			}
 		}
 
 		e.Client().Rest.UpdateMessage(e.Channel().ID(), snowflake.MustParse(data.String("message_id")), discord.MessageUpdate{
-			Content: &replyText,
+			Content: &msg.Content,
+		})
+
+		e.CreateMessage(discord.MessageCreate{
+			Content: replyText,
 		})
 
 		return nil
