@@ -42,6 +42,7 @@ func ResetCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 				buttons,
 			},
 		}); err != nil {
+			slog.Error("DisGo error(failed to create message)", slog.Any("err", err))
 			return err
 		}
 
@@ -61,13 +62,24 @@ func ResetCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
 					defer cancel()
 					if err := b.DB.Queries.ClearScoreboard(ctx); err != nil {
-						c.CreateMessage(discord.MessageCreate{
-							Content: "Failed to reset scoreboard, please try again",
-						})
+						if err := c.UpdateMessage(discord.MessageUpdate{
+							Content: omit.Ptr("Failed to reset scoreboard, please try again"),
+						}); err != nil {
+							slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+						}
 					}
-					c.CreateMessage(discord.MessageCreate{
-						Content: "Monthly prediction leaderboard reset successfully",
-					})
+					if err := c.UpdateMessage(discord.MessageUpdate{
+						Content: omit.Ptr("Monthly prediction leaderboard reset successfully"),
+					}); err != nil {
+						slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+					}
+				} else if c.Data.CustomID() == "reset_leaderboard_no" {
+					if err := c.UpdateMessage(discord.MessageUpdate{
+						Content: omit.Ptr("Monthly prediction leaderboard reset cancelled"),
+					}); err != nil {
+						slog.Error("DisGo error(failed to update message)", slog.Any("err", err))
+					}
+					return
 				} else {
 					return
 				}
