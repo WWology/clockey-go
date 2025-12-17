@@ -11,6 +11,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/omit"
 )
 
 var Reset = discord.SlashCommandCreate{
