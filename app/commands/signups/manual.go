@@ -89,7 +89,7 @@ func ManualCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 						return
 					}
 
-					replyText := "Event: " + eventType + " - " + name + "\n" +
+					replyText := "Event: " + m.Data.StringValues("event_type")[0] + " - " + m.Data.Text("event_name") + "\n" +
 						"Time: <t:" + m.Data.Text("event_time") + ":F> (<t:" + m.Data.Text("event_time") + ":R>)\n" +
 						"Hours: " + m.Data.Text("event_duration") + " hours\n" +
 						"Gardener: <@" + data.String("gardener") + ">"
