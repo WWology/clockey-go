@@ -69,7 +69,7 @@ func main() {
 	h.SlashCommand("/ping", commands.PingCommandHandler())
 	h.SlashCommand("/next", commands.NextCommandHandler())
 
-	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady)); err != nil {
+	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), bot.NewListenerFunc(b.OnCommand), bot.NewListenerFunc(b.OnModal)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))
 		os.Exit(-1)
 	}

@@ -60,3 +60,29 @@ func (b *Bot) OnReady(e *events.Ready) {
 		slog.Error("Failed to set presence", slog.Any("err", err))
 	}
 }
+
+func (b *Bot) OnCommand(e *events.ApplicationCommandInteractionCreate) {
+	slog.LogAttrs(
+		context.Background(),
+		slog.LevelInfo,
+		"Command used",
+		slog.String("command", e.Data.CommandName()),
+		slog.String("user", e.Member().EffectiveName()),
+		slog.Any("data", e.SlashCommandInteractionData().Options),
+	)
+}
+
+func (b *Bot) OnModal(m *events.ModalSubmitInteractionCreate) {
+	slog.LogAttrs(
+		context.Background(),
+		slog.LevelInfo,
+		"Modal submitted",
+		slog.String("modal", m.Data.CustomID),
+		slog.GroupAttrs("modal",
+			slog.String("event_type", m.Data.StringValues("event_type")[0]),
+			slog.String("event_name", m.Data.Text("event_name")),
+			slog.String("event_time", m.Data.Text("event_time")),
+			slog.String("event_duration", m.Data.Text("event_duration")),
+		),
+	)
+}
