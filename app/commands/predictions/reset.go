@@ -2,6 +2,7 @@ package predictions
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"clockey/app"

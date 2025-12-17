@@ -3,6 +3,7 @@ package predictions
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"clockey/app"

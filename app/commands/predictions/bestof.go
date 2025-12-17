@@ -2,6 +2,7 @@ package predictions
 
 import (
 	"fmt"
+	"log/slog"
 	"slices"
 
 	"github.com/disgoorg/disgo/discord"
