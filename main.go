@@ -17,7 +17,7 @@ import (
 
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -36,12 +36,12 @@ func main() {
 		os.Exit(-1)
 	}
 
-	conn, err := pgx.Connect(context.Background(), cfg.Database.ConnectionString)
+	conn, err := pgxpool.New(context.Background(), cfg.Database.ConnectionString)
 	if err != nil {
 		slog.Error("Failed to connect to database", slog.Any("err", err))
 		os.Exit(-1)
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
 	setupLogger(cfg.Log)
 	slog.Info("Starting Clockey...", slog.String("version", Version), slog.String("commit", Commit))

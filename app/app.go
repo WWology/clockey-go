@@ -13,7 +13,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func New(cfg Config, version string, commit string, db Database) *Bot {
@@ -27,7 +27,7 @@ func New(cfg Config, version string, commit string, db Database) *Bot {
 
 type Database struct {
 	Queries *sqlc.Queries
-	Conn    *pgx.Conn
+	Conn    *pgxpool.Pool
 }
 
 type Bot struct {
