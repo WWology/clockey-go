@@ -158,13 +158,12 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 	for i := 1; i <= totalPage; i++ {
 		buf := new(bytes.Buffer)
 		table := tablewriter.NewTable(buf,
-			tablewriter.WithRenderer(renderer.NewMarkdown()),
-			tablewriter.WithRendition(tw.Rendition{
-				Borders: tw.Border{
-					Left:  tw.Off,
-					Right: tw.Off,
-				},
-			}),
+			tablewriter.WithRenderer(renderer.NewMarkdown(tw.Rendition{Borders: tw.Border{
+				Left:  tw.Off,
+				Right: tw.Off,
+			}, Settings: tw.Settings{
+				CompactMode: tw.On,
+			}})),
 			tablewriter.WithAlignment(tw.Alignment{tw.AlignCenter}),
 		)
 		table.Header([]string{"Rank", "Name", "Score"})
@@ -265,12 +264,12 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			case <-ctx.Done():
 				return
 			case c := <-ch:
-				if c.Data.CustomID() == "next_show" {
+				if c.Data.CustomID() == "next_show_game" {
 					currentPage++
 					if currentPage >= totalPage {
 						currentPage = 0
 					}
-				} else if c.Data.CustomID() == "prev_show" {
+				} else if c.Data.CustomID() == "prev_show_game" {
 					currentPage--
 					if currentPage < 0 {
 						currentPage = totalPage - 1
@@ -413,12 +412,12 @@ func generateGlobalLeaderboard(b *app.Bot, e *handler.CommandEvent) error {
 			case <-ctx.Done():
 				return
 			case c := <-ch:
-				if c.Data.CustomID() == "next_show" {
+				if c.Data.CustomID() == "next_show_global" {
 					currentPage++
 					if currentPage >= totalPage {
 						currentPage = 0
 					}
-				} else if c.Data.CustomID() == "prev_show" {
+				} else if c.Data.CustomID() == "prev_show_global" {
 					currentPage--
 					if currentPage < 0 {
 						currentPage = totalPage - 1
