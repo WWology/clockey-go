@@ -52,14 +52,14 @@ func ResetCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					return c.Data.CustomID() == "reset_leaderboard_yes" || c.Data.CustomID() == "reset_leaderboard_no"
 				})
 			defer cls()
-			ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Minute)
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 			select {
 			case <-ctx.Done():
 				return
 			case c := <-ch:
 				if c.Data.CustomID() == "reset_leaderboard_yes" {
-					ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 					defer cancel()
 					if err := b.DB.Queries.ClearScoreboard(ctx); err != nil {
 						if err := c.UpdateMessage(discord.MessageUpdate{
