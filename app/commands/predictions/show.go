@@ -63,7 +63,7 @@ var Show = discord.SlashCommandCreate{
 
 func ShowCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 	return func(data discord.SlashCommandInteractionData, e *handler.CommandEvent) error {
-		if err := e.DeferCreateMessage(true); err != nil {
+		if err := e.DeferCreateMessage(false); err != nil {
 			slog.Error("DisGo error(failed to defer interaction response)", slog.Any("err", err))
 			return err
 		}
