@@ -78,6 +78,7 @@ func AddCommandHandler(b *app.Bot) handler.SlashCommandHandler {
 					Member: int64(member.User.ID),
 					Game:   sqlc.ScoreboardGame(data.String("game")),
 				}); err != nil {
+					slog.Error("failed to update scoreboard", slog.Any("member", member.User.ID), slog.Any("err", err))
 					return err
 				}
 				count++
