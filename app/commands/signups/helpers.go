@@ -21,41 +21,42 @@ type ChannelConfig struct {
 }
 
 // Production channel and role IDs
-
-// var Channels = ChannelConfig{
-// 	VoiceChannels: map[string]snowflake.ID{
-// 		"Dota": snowflake.ID(738009797932351519),
-// 		"CS":   snowflake.ID(746618267434614804),
-// 	},
-// 	ExternalChannels: map[string]string{
-// 		"MLBB": "https://discord.com/channels/689865753662455829/1350252799019188236",
-// 		"HoK":  "https://discord.com/channels/689865753662455829/1344676860562509955",
-// 	},
-// 	StageChannel: snowflake.ID(1186593338300842025),
-// }
-
-// var GardenerRoleID = snowflake.ID(720253636797530203)
-// var SignupEmoji = "OGpeepoYes:730890894814740541"
-// var ProcessedEmoji = "OGwecoo:787697278190223370"
-
-// Dev channel and role IDs
 var channels = ChannelConfig{
 	VoiceChannels: map[string]snowflake.ID{
-		"Dota": snowflake.ID(1435509993947398206),
-		"CS":   snowflake.ID(1435510029846446080),
+		"Dota": snowflake.ID(738009797932351519),
+		"CS":   snowflake.ID(746618267434614804),
 	},
 	ExternalChannels: map[string]string{
-		"MLBB": "https://discord.com/channels/738607619660578876/738607620566286397",
-		"HoK":  "https://discord.com/channels/738607619660578876/940936483819380757",
+		"MLBB": "https://discord.com/channels/689865753662455829/1350252799019188236",
+		"HoK":  "https://discord.com/channels/689865753662455829/1344676860562509955",
 	},
-	StageChannel: snowflake.ID(991620472544440454),
+	StageChannel: snowflake.ID(1186593338300842025),
 }
 
 const (
-	gardenerRoleID = snowflake.ID(1435510452795871232)
-	signupEmoji    = "khezuBrain:1329032244580323349"
-	processedEmoji = "ruggahPain:951843834554376262"
+	gardenerRoleID = snowflake.ID(720253636797530203)
+	signupEmoji    = "OGpeepoYes:730890894814740541"
+	processedEmoji = "OGwecoo:787697278190223370"
 )
+
+// Dev channel and role IDs
+// var channels = ChannelConfig{
+// 	VoiceChannels: map[string]snowflake.ID{
+// 		"Dota": snowflake.ID(1435509993947398206),
+// 		"CS":   snowflake.ID(1435510029846446080),
+// 	},
+// 	ExternalChannels: map[string]string{
+// 		"MLBB": "https://discord.com/channels/738607619660578876/738607620566286397",
+// 		"HoK":  "https://discord.com/channels/738607619660578876/940936483819380757",
+// 	},
+// 	StageChannel: snowflake.ID(991620472544440454),
+// }
+
+// const (
+// 	gardenerRoleID = snowflake.ID(1435510452795871232)
+// 	signupEmoji    = "khezuBrain:1329032244580323349"
+// 	processedEmoji = "ruggahPain:951843834554376262"
+// )
 
 var gardenerIDsMap = map[snowflake.ID]string{
 	293360731867316225: "N1k",
