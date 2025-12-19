@@ -65,6 +65,8 @@ func main() {
 	h.Autocomplete("/bo", predictions.BestOfAutocompleteHandler())
 	h.Autocomplete("/deletebo", predictions.BestOfAutocompleteHandler())
 	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
+	h.SlashCommand("/add", predictions.AddCommandHandler(b))
+	h.SlashCommand("/winners", predictions.WinnersCommandHandler(b))
 	// Other
 	h.SlashCommand("/ping", commands.PingCommandHandler())
 	h.SlashCommand("/next", commands.NextCommandHandler())

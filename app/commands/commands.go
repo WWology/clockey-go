@@ -20,6 +20,8 @@ var Commands = []discord.ApplicationCommandCreate{
 	predictions.BestOf,
 	predictions.DeleteBestOf,
 	predictions.Show,
+	predictions.Winners,
+	predictions.Add,
 
 	// Other
 	Next,
