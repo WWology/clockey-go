@@ -216,6 +216,7 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 			},
 			discord.SeparatorComponent{},
 			discord.ContainerComponent{
+				AccentColor: 0x00C389,
 				Components: []discord.ContainerSubComponent{
 					discord.TextDisplayComponent{
 						Content: fmt.Sprint("```\n" + buf.String() + "\n```"),
