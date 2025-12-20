@@ -60,12 +60,13 @@ func main() {
 	h.SlashCommand("/manual", signups.ManualCommandHandler(b))
 	h.SlashCommand("/report", signups.ReportCommandHandler(b))
 	// Predictions
-	h.SlashCommand("/bo", predictions.BestOfCommandHandler())
-	h.SlashCommand("/deletebo", predictions.DeleteBestOfCommandHandler())
-	h.Autocomplete("/bo", predictions.BestOfAutocompleteHandler())
-	h.Autocomplete("/deletebo", predictions.BestOfAutocompleteHandler())
-	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 	h.SlashCommand("/add", predictions.AddCommandHandler(b))
+	h.SlashCommand("/bo", predictions.BestOfCommandHandler())
+	h.Autocomplete("/bo", predictions.BestOfAutocompleteHandler())
+	h.SlashCommand("/deletebo", predictions.DeleteBestOfCommandHandler())
+	h.Autocomplete("/deletebo", predictions.BestOfAutocompleteHandler())
+	h.SlashCommand("/reset", predictions.ResetCommandHandler(b))
+	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 	h.SlashCommand("/winners", predictions.WinnersCommandHandler(b))
 	// Other
 	h.SlashCommand("/ping", commands.PingCommandHandler())
@@ -110,12 +111,18 @@ func setupLogger(cfg app.LogConfig) {
 		Level:     cfg.Level,
 	}
 
+	file, err := os.OpenFile("log.json", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		slog.Error("Failed to open log file", slog.Any("err", err))
+		os.Exit(-1)
+	}
+
 	var sHandler slog.Handler
 	switch cfg.Format {
 	case "json":
-		sHandler = slog.NewJSONHandler(os.Stdout, opts)
+		sHandler = slog.NewJSONHandler(file, opts)
 	case "text":
-		sHandler = slog.NewTextHandler(os.Stdout, opts)
+		sHandler = slog.NewTextHandler(file, opts)
 	default:
 		slog.Error("Unknown log format", slog.String("format", cfg.Format))
 		os.Exit(-1)

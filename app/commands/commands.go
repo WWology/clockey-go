@@ -17,11 +17,12 @@ var Commands = []discord.ApplicationCommandCreate{
 	signups.Report,
 
 	// Predictions
+	predictions.Add,
 	predictions.BestOf,
 	predictions.DeleteBestOf,
+	predictions.Reset,
 	predictions.Show,
 	predictions.Winners,
-	predictions.Add,
 
 	// Other
 	Next,

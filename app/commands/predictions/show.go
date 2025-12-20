@@ -227,12 +227,12 @@ func generateGameLeaderboard(b *app.Bot, e *handler.CommandEvent, game string) e
 				Components: []discord.InteractiveComponent{
 					discord.ButtonComponent{
 						Style:    discord.ButtonStyleSecondary,
-						Label:    "⏮️",
+						Label:    "⬅️",
 						CustomID: "prev_show",
 					},
 					discord.ButtonComponent{
 						Style:    discord.ButtonStyleSecondary,
-						Label:    "⏭️",
+						Label:    "➡️",
 						CustomID: "next_show",
 					},
 				},

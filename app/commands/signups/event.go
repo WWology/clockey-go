@@ -63,8 +63,10 @@ func EventCommandHandler() handler.SlashCommandHandler {
 					if err := m.CreateMessage(discord.MessageCreate{
 						Content: replyText,
 						AllowedMentions: &discord.AllowedMentions{
-							Roles: discord.DefaultAllowedMentions.Roles,
-							Users: discord.DefaultAllowedMentions.Users,
+							Parse: []discord.AllowedMentionType{
+								discord.AllowedMentionTypeRoles,
+								discord.AllowedMentionTypeUsers,
+							},
 						},
 					}); err != nil {
 						slog.Error("DisGo error(failed to send message)", slog.Any("err", err))
