@@ -13,6 +13,7 @@ import (
 	"clockey/app/commands"
 	"clockey/app/commands/predictions"
 	"clockey/app/commands/signups"
+	"clockey/app/commands/utils"
 	"clockey/database/sqlc"
 
 	"github.com/disgoorg/disgo/bot"
@@ -68,6 +69,8 @@ func main() {
 	h.SlashCommand("/reset", predictions.ResetCommandHandler(b))
 	h.SlashCommand("/show", predictions.ShowCommandHandler(b))
 	h.SlashCommand("/winners", predictions.WinnersCommandHandler(b))
+	// Utils
+	h.SlashCommand("/util", utils.UtilCommandHandler())
 	// Other
 	h.SlashCommand("/ping", commands.PingCommandHandler())
 	h.SlashCommand("/next", commands.NextCommandHandler())
@@ -111,18 +114,18 @@ func setupLogger(cfg app.LogConfig) {
 		Level:     cfg.Level,
 	}
 
-	file, err := os.OpenFile("log.json", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		slog.Error("Failed to open log file", slog.Any("err", err))
-		os.Exit(-1)
-	}
+	// file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	// if err != nil {
+	// 	slog.Error("Failed to open log file", slog.Any("err", err))
+	// 	os.Exit(-1)
+	// }
 
 	var sHandler slog.Handler
 	switch cfg.Format {
 	case "json":
-		sHandler = slog.NewJSONHandler(file, opts)
+		sHandler = slog.NewJSONHandler(os.Stdout, opts)
 	case "text":
-		sHandler = slog.NewTextHandler(file, opts)
+		sHandler = slog.NewTextHandler(os.Stdout, opts)
 	default:
 		slog.Error("Unknown log format", slog.String("format", cfg.Format))
 		os.Exit(-1)

@@ -146,11 +146,14 @@ func getBanner(attachment discord.Attachment) *discord.Icon {
 		slog.Error("failed to get attachment URL", slog.Any("err", err))
 		return nil
 	}
+	defer resp.Body.Close()
+
 	banner, err := discord.NewIcon(discord.IconTypeJPEG, resp.Body)
 	if err != nil {
 		slog.Error("failed to create banner icon", slog.Any("err", err))
 		return nil
 	}
+
 	return banner
 }
 
