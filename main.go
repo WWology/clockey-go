@@ -114,18 +114,18 @@ func setupLogger(cfg app.LogConfig) {
 		Level:     cfg.Level,
 	}
 
-	// file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-	// if err != nil {
-	// 	slog.Error("Failed to open log file", slog.Any("err", err))
-	// 	os.Exit(-1)
-	// }
+	file, err := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	if err != nil {
+		slog.Error("Failed to open log file", slog.Any("err", err))
+		os.Exit(-1)
+	}
 
 	var sHandler slog.Handler
 	switch cfg.Format {
 	case "json":
-		sHandler = slog.NewJSONHandler(os.Stdout, opts)
+		sHandler = slog.NewJSONHandler(file, opts)
 	case "text":
-		sHandler = slog.NewTextHandler(os.Stdout, opts)
+		sHandler = slog.NewTextHandler(file, opts)
 	default:
 		slog.Error("Unknown log format", slog.String("format", cfg.Format))
 		os.Exit(-1)
