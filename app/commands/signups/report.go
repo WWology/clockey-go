@@ -324,7 +324,6 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 			case <-ctx.Done():
 				return
 			case c := <-ch:
-				fmt.Println(c.Data.CustomID())
 				switch c.Data.CustomID() {
 				case "n1k_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
