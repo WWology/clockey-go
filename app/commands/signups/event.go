@@ -11,6 +11,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/omit"
 )
 
 var Event = discord.SlashCommandCreate{
@@ -115,6 +116,7 @@ func EventCommandHandler() handler.SlashCommandHandler {
 								Location: channels.ExternalChannels["MLBB"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
+							ScheduledEndTime:   omit.Ptr(time.Unix(unixValue, 0).Add(1 * time.Hour)),
 							Image:              banner,
 						}); err != nil {
 							slog.Error("DisGo error(failed to create scheduled event)", slog.Any("err", err))
@@ -128,6 +130,7 @@ func EventCommandHandler() handler.SlashCommandHandler {
 								Location: channels.ExternalChannels["HoK"],
 							},
 							ScheduledStartTime: time.Unix(unixValue, 0),
+							ScheduledEndTime:   omit.Ptr(time.Unix(unixValue, 0).Add(1 * time.Hour)),
 							Image:              banner,
 						}); err != nil {
 							slog.Error("DisGo error(failed to create scheduled event)", slog.Any("err", err))
