@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log/slog"
+	"slices"
 	"time"
 
 	"clockey/database/sqlc"
@@ -13,6 +14,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
+	"github.com/disgoorg/snowflake/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -85,4 +87,27 @@ func (b *Bot) OnModal(m *events.ModalSubmitInteractionCreate) {
 			slog.String("event_duration", m.Data.Text("event_duration")),
 		),
 	)
+}
+
+func (b *Bot) OnMessageCreate(e *events.MessageCreate) {
+	// Honeypot: automatically ban any user who posts in the designated channel
+	if e.ChannelID == snowflake.ID(1459863214434287798) {
+		gardenerRoleID := snowflake.ID(720253636797530203)
+		if slices.Contains(e.Message.Member.RoleIDs, gardenerRoleID) {
+			return
+		}
+		err := e.Client().Rest.AddBan(*e.GuildID, e.Message.Author.ID, time.Duration(168*time.Hour))
+		if err != nil {
+			slog.Error("failed to ban user", "error", err)
+		}
+
+		slog.LogAttrs(
+			context.Background(),
+			slog.LevelInfo,
+			"scam & bot detected",
+			slog.String("user", e.Message.Author.Username),
+			slog.String("content", e.Message.Content),
+		)
+	}
+
 }
