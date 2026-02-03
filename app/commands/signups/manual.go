@@ -34,6 +34,10 @@ var Manual = discord.SlashCommandCreate{
 					Value: "204923365205475329",
 				},
 				{
+					Name:  "Pupi",
+					Value: "492549065041510403",
+				},
+				{
 					Name:  "WW",
 					Value: "754724309276164159",
 				},

@@ -187,7 +187,7 @@ type GardenerReportResult struct {
 func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.Time, endDate time.Time) error {
 	var wg sync.WaitGroup
 
-	invoices := make(chan GardenerReportResult, 5)
+	invoices := make(chan GardenerReportResult, 6)
 	for id, name := range gardenerIDsMap {
 		wg.Go(func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -208,7 +208,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 	wg.Wait()
 	close(invoices)
 
-	layouts := make(map[string][]discord.LayoutComponent, 5)
+	layouts := make(map[string][]discord.LayoutComponent, 6)
 	for invoice := range invoices {
 		var dotaEvents, csEvents, mlbbEvents, hokEvents, otherEvents string
 		gardenerHours := 0
@@ -275,6 +275,12 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 						Disabled: strings.Contains(invoice.Gardener, "Kit"),
 					},
 					discord.ButtonComponent{
+						Label:    "Pupi",
+						Style:    discord.ButtonStyleSecondary,
+						CustomID: "pupi_button",
+						Disabled: strings.Contains(invoice.Gardener, "Pupi"),
+					},
+					discord.ButtonComponent{
 						Label:    "WW",
 						Style:    discord.ButtonStyleSecondary,
 						CustomID: "ww_button",
@@ -286,6 +292,10 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 						CustomID: "bonteng_button",
 						Disabled: strings.Contains(invoice.Gardener, "Bonteng"),
 					},
+				},
+			},
+			discord.ActionRowComponent{
+				Components: []discord.InteractiveComponent{
 					discord.ButtonComponent{
 						Label:    "Sam",
 						Style:    discord.ButtonStyleSecondary,
@@ -312,6 +322,7 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 			func(c *events.ComponentInteractionCreate) bool {
 				return c.Data.CustomID() == "n1k_button" ||
 					c.Data.CustomID() == "kit_button" ||
+					c.Data.CustomID() == "pupi_button" ||
 					c.Data.CustomID() == "ww_button" ||
 					c.Data.CustomID() == "bonteng_button" ||
 					c.Data.CustomID() == "sam_button"
@@ -333,6 +344,13 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 						slog.Error("DisGo error(failed to update message to N1k)", slog.Any("err", err))
 					}
 				case "kit_button":
+					if err := c.UpdateMessage(discord.MessageUpdate{
+						Components: omit.Ptr(layouts["Kit"]),
+						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
+					}); err != nil {
+						slog.Error("DisGo error(failed to update message to Kit)", slog.Any("err", err))
+					}
+				case "pupi_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
 						Components: omit.Ptr(layouts["Kit"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
