@@ -352,10 +352,10 @@ func GenerateGardenerReport(b *app.Bot, e *handler.CommandEvent, startDate time.
 					}
 				case "pupi_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
-						Components: omit.Ptr(layouts["Kit"]),
+						Components: omit.Ptr(layouts["Pupi"]),
 						Flags:      omit.Ptr(discord.MessageFlagIsComponentsV2),
 					}); err != nil {
-						slog.Error("DisGo error(failed to update message to Kit)", slog.Any("err", err))
+						slog.Error("DisGo error(failed to update message to Pupi)", slog.Any("err", err))
 					}
 				case "ww_button":
 					if err := c.UpdateMessage(discord.MessageUpdate{
